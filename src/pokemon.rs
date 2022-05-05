@@ -1,9 +1,8 @@
 use rand::prelude::ThreadRng;
 use rand::distributions::Uniform;
 
-use crate::{PokemonType, get_random_type};
+use crate::PokemonType;
 
-pub const POKEMON_IMG_SIZE: usize = 512;
 pub const POKEMON_COUNT: usize = 18;
 pub const POKEMON: [[f32; POKEMON_COUNT]; POKEMON_COUNT] = [
 	[ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.0, 1.0, 1.0, 0.5, 1.0 ], // Normal
@@ -60,13 +59,8 @@ impl Pokemon
         Pokemon {
             health: 80, 
             damage: 40,
-            kind: get_random_type(rng, die)
+            kind: PokemonType::random(rng, die)
         }
-    }
-
-    pub fn is_stronger(&self, other: &Pokemon) -> bool
-    {
-        get_effectiveness(self.kind.into(), other.kind.into()) > 1.0
     }
 
     pub fn take_damage(&mut self, damage: i32) -> bool
@@ -80,7 +74,7 @@ impl Pokemon
 #[cfg(test)]
 mod tests {
     use crate::types::PokemonType;
-    use crate::{Pokemon, get_effectiveness_with_type};
+    use crate::get_effectiveness_with_type;
 
     #[test]
     fn test_get_effectiveness()
@@ -88,25 +82,5 @@ mod tests {
         assert_eq!(get_effectiveness_with_type(PokemonType::Normal, PokemonType::Normal), 1.0);
         assert_eq!(get_effectiveness_with_type(PokemonType::Fire, PokemonType::Steel), 2.0);
         assert_eq!(get_effectiveness_with_type(PokemonType::Water, PokemonType::Grass), 0.5);
-    }
-
-    #[test]
-    fn test_is_stronger()
-    {
-        {
-            let p1 = Pokemon::new(PokemonType::Fire);
-            let p2 = Pokemon::new(PokemonType::Steel);
-            assert!(p1.is_stronger(&p2));
-        }
-        {
-            let p1 = Pokemon::new(PokemonType::Normal);
-            let p2 = Pokemon::new(PokemonType::Normal);
-            assert!(!p1.is_stronger(&p2));
-        }
-        {
-            let p1 = Pokemon::new(PokemonType::Water);
-            let p2 = Pokemon::new(PokemonType::Grass);
-            assert!(!p1.is_stronger(&p2));
-        }
     }
 }

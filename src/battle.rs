@@ -1,8 +1,7 @@
 use rand::prelude::Distribution;
 use rand::distributions::Uniform;
-use std::fmt;
 
-use crate::{Pokemon, POKEMON_IMG_SIZE, POKEMON_COUNT, get_effectiveness_with_type, pokemontype_to_char};
+use crate::{Pokemon, IMG_SIZE, POKEMON_COUNT, get_effectiveness_with_type};
 
 #[derive(PartialEq, Copy, Clone)]
 pub struct Location
@@ -15,37 +14,13 @@ impl Location
 {
     pub fn is_outside(&self) -> bool
     {
-        self.x > POKEMON_IMG_SIZE || self.y > POKEMON_IMG_SIZE
+        self.x > IMG_SIZE || self.y > IMG_SIZE
     }
 }
 
 pub struct Battle
 {
     pub pokemons: Vec<Vec<Pokemon>>,
-}
-
-impl fmt::Display for Battle
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
-        let mut col_count = 0;
-        let mut result = String::with_capacity(POKEMON_IMG_SIZE * POKEMON_IMG_SIZE);
-        for (_, row) in self.pokemons.iter().enumerate()
-        {
-            for (_, pokemon) in row.iter().enumerate()
-            {
-                result.push(pokemontype_to_char(pokemon.kind));
-                col_count += 1;
-                if col_count == POKEMON_IMG_SIZE
-                {
-                    result.push('\n');
-                    col_count = 0;
-                }
-            }
-        }
-
-        write!(f, "{}", result)
-    }
 }
 
 impl Battle
@@ -55,10 +30,10 @@ impl Battle
         let mut rng = rand::thread_rng();
         let die = Uniform::from(0 .. POKEMON_COUNT);
 
-        let mut battle = Battle { pokemons: Vec::with_capacity(POKEMON_IMG_SIZE) };
-        for _ in 0 .. POKEMON_IMG_SIZE
+        let mut battle = Battle { pokemons: Vec::with_capacity(IMG_SIZE) };
+        for _ in 0 .. IMG_SIZE
         {
-            let row = [(); POKEMON_IMG_SIZE].map(|_| Pokemon::random(&mut rng, &die));
+            let row = [(); IMG_SIZE].map(|_| Pokemon::random(&mut rng, &die));
             battle.pokemons.push(Vec::from(row));
         }
 
@@ -69,11 +44,11 @@ impl Battle
     {
         let mut death_count = 0;
 
-        let action_count = POKEMON_IMG_SIZE * POKEMON_IMG_SIZE;
+        let action_count = IMG_SIZE * IMG_SIZE;
         for n in 0..action_count
         {
-            let x = n % POKEMON_IMG_SIZE;
-            let y = (n as f32 / POKEMON_IMG_SIZE as f32) as usize;
+            let x = n % IMG_SIZE;
+            let y = (n as f32 / IMG_SIZE as f32) as usize;
 
             let attacker_loc = Location { x, y };
             //let defender_loc = self.weakest_neighbour(attacker_loc);
@@ -125,6 +100,7 @@ impl Battle
 
         let pokemon = &self.pokemons[origin.y][origin.x];
 
+        // waage todo: refactor these 4, they do similar things
         if origin.y != 0 // there is a top neighbour
         {
             let neighbour = &self.pokemons[origin.y - 1][origin.x];
@@ -135,7 +111,7 @@ impl Battle
                 location = Location { x: origin.x, y: origin.y - 1 };
             }
         }
-        if origin.x != POKEMON_IMG_SIZE - 1 // there is a right neighbour
+        if origin.x != IMG_SIZE - 1 // there is a right neighbour
         {
             let neighbour = &self.pokemons[origin.y][origin.x + 1];
             let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
@@ -145,7 +121,7 @@ impl Battle
                 location = Location { x: origin.x + 1, y: origin.y };
             }
         }
-        if origin.y != POKEMON_IMG_SIZE - 1 // there is a bottom neighbour
+        if origin.y != IMG_SIZE - 1 // there is a bottom neighbour
         {
             let neighbour = &self.pokemons[origin.y + 1][origin.x];
             let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
@@ -183,11 +159,11 @@ impl Battle
         {
             neighbours.push(Location { x: origin.x, y: origin.y - 1 });
         }
-        if origin.x != POKEMON_IMG_SIZE - 1 // there is a right neighbour
+        if origin.x != IMG_SIZE - 1 // there is a right neighbour
         {
             neighbours.push(Location { x: origin.x + 1, y: origin.y });
         }
-        if origin.y != POKEMON_IMG_SIZE - 1 // there is a bottom neighbour
+        if origin.y != IMG_SIZE - 1 // there is a bottom neighbour
         {
             neighbours.push(Location { x: origin.x, y: origin.y + 1 });
         }
