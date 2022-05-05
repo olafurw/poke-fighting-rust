@@ -18,3 +18,10 @@ cargo r --release
 ```
 
 Depends on `nannou` for the Window
+
+## Example Frame
+
+Here the purple Pokémon (Ghost type) have a few large clusters and are slowly taking over the lower region.
+But a small brown section (Dark type) has started to invade one of them
+
+![preview](preview.png)
