@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use nannou::prelude::*;
 
 mod types;
@@ -20,16 +18,14 @@ fn main()
 
 struct Model
 {
-    window: WindowId,
     battle: Battle,
 }
 
 fn model(app: &App) -> Model
 {
-    let window = app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).event(event).view(view).build().unwrap();
+    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).event(event).view(view).build().unwrap();
 
     Model { 
-        window, 
         battle: Battle::new() 
     }
 }

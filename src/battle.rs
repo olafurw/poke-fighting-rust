@@ -51,8 +51,8 @@ impl Battle
             let y = (n as f32 / IMG_SIZE as f32) as usize;
 
             let attacker_loc = Location { x, y };
-            //let defender_loc = self.weakest_neighbour(attacker_loc);
-            let defender_loc = self.random_neighbour(attacker_loc);
+            //let defender_loc = self._weakest_neighbour(attacker_loc);
+            let defender_loc = self._random_neighbour(attacker_loc);
             
             if self.fight(attacker_loc, defender_loc)
             {
@@ -89,7 +89,7 @@ impl Battle
         }
     }
 
-    pub fn weakest_neighbour(&self, origin: Location) -> Location
+    pub fn _weakest_neighbour(&self, origin: Location) -> Location
     {
         let mut highest_effectiveness: f32 = 0.0;
         let mut location = Location { x: 0, y: 0 };
@@ -145,7 +145,7 @@ impl Battle
         location
     }
 
-    pub fn random_neighbour(&self, origin: Location) -> Location
+    pub fn _random_neighbour(&self, origin: Location) -> Location
     {
         let location = Location { x: 0, y: 0 };
         if origin.is_outside()
