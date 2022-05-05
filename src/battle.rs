@@ -1,8 +1,8 @@
-use rand::prelude::ThreadRng;
+use rand::prelude::Distribution;
 use rand::distributions::Uniform;
 use std::fmt;
 
-use crate::{Pokemon, POKEMON_IMG_SIZE, get_effectiveness_with_type, pokemontype_to_char};
+use crate::{Pokemon, POKEMON_IMG_SIZE, POKEMON_COUNT, get_effectiveness_with_type, pokemontype_to_char};
 
 #[derive(PartialEq, Copy, Clone)]
 pub struct Location
@@ -50,12 +50,15 @@ impl fmt::Display for Battle
 
 impl Battle
 {
-    pub fn new(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
+    pub fn new() -> Self
     {
+        let mut rng = rand::thread_rng();
+        let die = Uniform::from(0 .. POKEMON_COUNT);
+
         let mut battle = Battle { pokemons: Vec::with_capacity(POKEMON_IMG_SIZE) };
         for _ in 0 .. POKEMON_IMG_SIZE
         {
-            let row = [(); POKEMON_IMG_SIZE].map(|_| Pokemon::random(rng, die));
+            let row = [(); POKEMON_IMG_SIZE].map(|_| Pokemon::random(&mut rng, &die));
             battle.pokemons.push(Vec::from(row));
         }
 
@@ -73,7 +76,8 @@ impl Battle
             let y = (n as f32 / POKEMON_IMG_SIZE as f32) as usize;
 
             let attacker_loc = Location { x, y };
-            let defender_loc = self.weakest_neighbour(attacker_loc);
+            //let defender_loc = self.weakest_neighbour(attacker_loc);
+            let defender_loc = self.random_neighbour(attacker_loc);
             
             if self.fight(attacker_loc, defender_loc)
             {
@@ -163,5 +167,43 @@ impl Battle
         }
 
         location
+    }
+
+    pub fn random_neighbour(&self, origin: Location) -> Location
+    {
+        let location = Location { x: 0, y: 0 };
+        if origin.is_outside()
+        {
+            return location;
+        }
+
+        let mut neighbours = Vec::new();
+
+        if origin.y != 0 // there is a top neighbour
+        {
+            neighbours.push(Location { x: origin.x, y: origin.y - 1 });
+        }
+        if origin.x != POKEMON_IMG_SIZE - 1 // there is a right neighbour
+        {
+            neighbours.push(Location { x: origin.x + 1, y: origin.y });
+        }
+        if origin.y != POKEMON_IMG_SIZE - 1 // there is a bottom neighbour
+        {
+            neighbours.push(Location { x: origin.x, y: origin.y + 1 });
+        }
+        if origin.x != 0 // there is a left neighbour
+        {
+            neighbours.push(Location { x: origin.x - 1, y: origin.y });
+        }
+
+        if neighbours.is_empty()
+        {
+            return location;
+        }
+
+        let mut rng = rand::thread_rng();
+        let die = Uniform::from(0 .. neighbours.len());
+
+        neighbours[die.sample(&mut rng)]
     }
 }
