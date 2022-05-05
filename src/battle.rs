@@ -1,7 +1,8 @@
 use rand::prelude::ThreadRng;
 use rand::distributions::Uniform;
+use std::fmt;
 
-use crate::{Pokemon, POKEMON_IMG_SIZE, get_effectiveness_with_type};
+use crate::{Pokemon, POKEMON_IMG_SIZE, get_effectiveness_with_type, pokemontype_to_char};
 
 #[derive(PartialEq, Copy, Clone)]
 pub struct Location
@@ -21,6 +22,30 @@ impl Location
 pub struct Battle
 {
     pub pokemons: Vec<Vec<Pokemon>>,
+}
+
+impl fmt::Display for Battle
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        let mut col_count = 0;
+        let mut result = String::with_capacity(POKEMON_IMG_SIZE * POKEMON_IMG_SIZE);
+        for (_, row) in self.pokemons.iter().enumerate()
+        {
+            for (_, pokemon) in row.iter().enumerate()
+            {
+                result.push(pokemontype_to_char(pokemon.kind));
+                col_count += 1;
+                if col_count == POKEMON_IMG_SIZE
+                {
+                    result.push('\n');
+                    col_count = 0;
+                }
+            }
+        }
+
+        write!(f, "{}", result)
+    }
 }
 
 impl Battle

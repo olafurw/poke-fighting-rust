@@ -27,6 +27,12 @@ pub enum PokemonType
 	Fairy
 }
 
+pub fn pokemontype_to_char(kind: PokemonType) -> char
+{
+	let value = kind as u32;
+	char::from_u32(value + 65).expect("CRASH")
+}
+
 pub fn pokemontype_from_usize(value: usize) -> PokemonType
 {
     PokemonType::try_from(value).unwrap_or_else(|_| panic!("Invalid Pokemon Value: {}", value))

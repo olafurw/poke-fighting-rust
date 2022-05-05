@@ -3,7 +3,7 @@ use rand::distributions::Uniform;
 
 use crate::{PokemonType, get_random_type};
 
-pub const POKEMON_IMG_SIZE: usize = 800;
+pub const POKEMON_IMG_SIZE: usize = 512;
 pub const POKEMON_COUNT: usize = 18;
 pub const POKEMON: [[f32; POKEMON_COUNT]; POKEMON_COUNT] = [
 	[ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.0, 1.0, 1.0, 0.5, 1.0 ], // Normal
