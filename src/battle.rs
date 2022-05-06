@@ -42,7 +42,7 @@ impl Battle
 
     pub fn pokemon(&self, x: u32, y: u32) -> &Pokemon
     {
-        return &self.pokemons[y as usize][x as usize];
+        &self.pokemons[y as usize][x as usize]
     }
 
     pub fn action(&mut self) -> u32
@@ -56,6 +56,7 @@ impl Battle
         let start = self.rng.gen_range(0 .. NUM_ENTRIES);
         let offset = PRIMES[self.rng.gen_range(0 .. PRIMES.len())];
         let mut current = start;
+
         loop
         {
             let attacker_loc = Location { x: current % IMG_SIZE, y: current / IMG_SIZE };
@@ -161,10 +162,9 @@ impl Battle
 
     pub fn _random_neighbour(&mut self, origin: Location) -> Location
     {
-        let location = Location { x: 0, y: 0 };
         if origin.is_outside()
         {
-            return location;
+            return Location { x: 0, y: 0 };
         }
 
         let direction = self.rng.gen_range(0 .. 4);
