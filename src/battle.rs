@@ -105,58 +105,24 @@ impl Battle
 
     pub fn _weakest_neighbour(&self, origin: Location) -> Location
     {
-        let mut highest_effectiveness: f32 = 0.0;
-        let mut location = Location { x: 0, y: 0 };
         if origin.is_outside()
         {
-            return location;
+            return Location { x: 0, y: 0 };
         }
 
         let pokemon = &self.pokemons[origin.y][origin.x];
 
-        // waage todo: refactor these 4, they do similar things
-        if origin.y != 0 // there is a top neighbour
+        let candidates = [
+            Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE },
+            Location { x: (origin.x + 1) % IMG_SIZE, y: origin.y },
+            Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE },
+            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE, y: origin.y },
+        ];
+        *candidates.iter().max_by_key(|candidate|
         {
-            let neighbour = &self.pokemons[origin.y - 1][origin.x];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                highest_effectiveness = effectiveness;
-                location = Location { x: origin.x, y: origin.y - 1 };
-            }
-        }
-        if origin.x != IMG_SIZE - 1 // there is a right neighbour
-        {
-            let neighbour = &self.pokemons[origin.y][origin.x + 1];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                highest_effectiveness = effectiveness;
-                location = Location { x: origin.x + 1, y: origin.y };
-            }
-        }
-        if origin.y != IMG_SIZE - 1 // there is a bottom neighbour
-        {
-            let neighbour = &self.pokemons[origin.y + 1][origin.x];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                highest_effectiveness = effectiveness;
-                location = Location { x: origin.x, y: origin.y + 1 };
-            }
-        }
-        if origin.x != 0 // there is a left neighbour
-        {
-            let neighbour = &self.pokemons[origin.y][origin.x - 1];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                //highest_effectiveness = effectiveness;
-                location = Location { x: origin.x - 1, y: origin.y };
-            }
-        }
-
-        location
+            let neighbour = &self.pokemons[candidate.y][candidate.x];
+            (get_effectiveness_with_type(pokemon.kind, neighbour.kind) * 10.0) as i32
+        }).unwrap()
     }
 
     pub fn _random_neighbour(&mut self, origin: Location) -> Location
