@@ -53,7 +53,7 @@ impl Battle
             let attacker_loc = Location { x, y };
             //let defender_loc = self._weakest_neighbour(attacker_loc);
             let defender_loc = self._random_neighbour(attacker_loc);
-            
+
             if self.fight(attacker_loc, defender_loc)
             {
                 death_count += 1;
@@ -80,7 +80,7 @@ impl Battle
         let is_dead = defender.take_damage(damage);
         if is_dead
         {
-            *defender = Pokemon::new(attacker_kind);
+            defender.reset(attacker_kind);
             true
         }
         else
