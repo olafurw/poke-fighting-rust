@@ -30,12 +30,12 @@ fn model(app: &App) -> Model
     }
 }
 
-fn update(_app: &App, _model: &mut Model, _update: Update)
+fn update(_app: &App, model: &mut Model, _update: Update)
 {
-    _model.battle.action();
+    model.battle.action();
 }
 
-fn view(_app: &App, _model: &Model, frame: Frame)
+fn view(app: &App, model: &Model, frame: Frame)
 {
     let mut pixels = nannou::image::RgbaImage::new(IMG_SIZE as u32, IMG_SIZE as u32);
 
@@ -43,18 +43,18 @@ fn view(_app: &App, _model: &Model, frame: Frame)
     {
         for x in 0..IMG_SIZE
         {
-            let pokemon = &_model.battle.pokemons[y][x];
+            let pokemon = &model.battle.pokemons[y][x];
             let color: [u8; 4] = pokemon.kind.into();
             pixels.put_pixel(x as u32, y as u32, nannou::image::Rgba(color));
         }
     }
 
     let image = nannou::image::DynamicImage::ImageRgba8(pixels);
-    let texture = wgpu::Texture::from_image(_app, &image);
+    let texture = wgpu::Texture::from_image(app, &image);
 
     frame.clear(PURPLE);
 
-    let draw = _app.draw();
+    let draw = app.draw();
     draw.texture(&texture);
-    draw.to_frame(_app, &frame).unwrap();
+    draw.to_frame(app, &frame).unwrap();
 }
