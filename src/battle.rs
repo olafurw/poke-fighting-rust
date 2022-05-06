@@ -1,5 +1,5 @@
-use rand::prelude::Distribution;
 use rand::distributions::Uniform;
+use rand::Rng;
 
 use crate::{Pokemon, IMG_SIZE, POKEMON_COUNT, get_effectiveness_with_type};
 
@@ -20,43 +20,57 @@ impl Location
 
 pub struct Battle
 {
-    pub pokemons: Vec<Vec<Pokemon>>,
+    pokemons: Vec<Vec<Pokemon>>,
+    rng: rand::rngs::ThreadRng,
 }
 
 impl Battle
 {
     pub fn new() -> Self
     {
-        let mut rng = rand::thread_rng();
         let die = Uniform::from(0 .. POKEMON_COUNT);
 
-        let mut battle = Battle { pokemons: Vec::with_capacity(IMG_SIZE) };
+        let mut battle = Battle { pokemons: Vec::with_capacity(IMG_SIZE), rng: rand::thread_rng() };
         for _ in 0 .. IMG_SIZE
         {
-            let row = [(); IMG_SIZE].map(|_| Pokemon::random(&mut rng, &die));
+            let row = [(); IMG_SIZE].map(|_| Pokemon::random(&mut battle.rng, &die));
             battle.pokemons.push(Vec::from(row));
         }
 
         battle
     }
 
+    pub fn pokemon(&self, x: u32, y: u32) -> &Pokemon
+    {
+        return &self.pokemons[y as usize][x as usize];
+    }
+
     pub fn action(&mut self) -> u32
     {
+        // We use prime numbers as offsets to loop through the entries in a semi-random fashion.
+        // These particular prime numbers have been chosen by a fair dice roll.
+        const PRIMES: &[usize] = &[48817, 58099, 89867, 105407, 126943, 200723, 221021, 231677];
+        const NUM_ENTRIES: usize = IMG_SIZE * IMG_SIZE;
+
         let mut death_count = 0;
-
-        let action_count = IMG_SIZE * IMG_SIZE;
-        for n in 0..action_count
+        let start = self.rng.gen_range(0 .. NUM_ENTRIES);
+        let offset = PRIMES[self.rng.gen_range(0 .. PRIMES.len())];
+        let mut current = start;
+        loop
         {
-            let x = n % IMG_SIZE;
-            let y = (n as f32 / IMG_SIZE as f32) as usize;
-
-            let attacker_loc = Location { x, y };
+            let attacker_loc = Location { x: current % IMG_SIZE, y: current / IMG_SIZE };
             //let defender_loc = self._weakest_neighbour(attacker_loc);
             let defender_loc = self._random_neighbour(attacker_loc);
-            
+
             if self.fight(attacker_loc, defender_loc)
             {
                 death_count += 1;
+            }
+
+            current = (current + offset) % NUM_ENTRIES;
+            if current == start
+            {
+                break;
             }
         }
 
@@ -80,7 +94,7 @@ impl Battle
         let is_dead = defender.take_damage(damage);
         if is_dead
         {
-            *defender = Pokemon::new(attacker_kind);
+            defender.reset(attacker_kind);
             true
         }
         else
@@ -145,7 +159,7 @@ impl Battle
         location
     }
 
-    pub fn _random_neighbour(&self, origin: Location) -> Location
+    pub fn _random_neighbour(&mut self, origin: Location) -> Location
     {
         let location = Location { x: 0, y: 0 };
         if origin.is_outside()
@@ -153,33 +167,22 @@ impl Battle
             return location;
         }
 
-        let mut neighbours = Vec::new();
-
-        if origin.y != 0 // there is a top neighbour
+        let direction = self.rng.gen_range(0 .. 4);
+        if direction == 0       // Go up
         {
-            neighbours.push(Location { x: origin.x, y: origin.y - 1 });
+            Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE }
         }
-        if origin.x != IMG_SIZE - 1 // there is a right neighbour
+        else if direction == 1  // Go right
         {
-            neighbours.push(Location { x: origin.x + 1, y: origin.y });
+            Location { x: (origin.x + 1) % IMG_SIZE , y: origin.y }
         }
-        if origin.y != IMG_SIZE - 1 // there is a bottom neighbour
+        else if direction == 2  // Go down
         {
-            neighbours.push(Location { x: origin.x, y: origin.y + 1 });
+            Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE }
         }
-        if origin.x != 0 // there is a left neighbour
+        else                    // Go left
         {
-            neighbours.push(Location { x: origin.x - 1, y: origin.y });
+            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE , y: origin.y }
         }
-
-        if neighbours.is_empty()
-        {
-            return location;
-        }
-
-        let mut rng = rand::thread_rng();
-        let die = Uniform::from(0 .. neighbours.len());
-
-        neighbours[die.sample(&mut rng)]
     }
 }

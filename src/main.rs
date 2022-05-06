@@ -19,46 +19,45 @@ fn main()
 struct Model
 {
     battle: Battle,
+    image: nannou::image::DynamicImage,
 }
 
 fn model(app: &App) -> Model
 {
-    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).event(event).view(view).build().unwrap();
+    let surface_conf_builder = nannou::window::SurfaceConfigurationBuilder::new().present_mode(nannou::wgpu::PresentMode::Mailbox);
+    app.new_window()
+       .size(IMG_SIZE as u32, IMG_SIZE as u32)
+       .surface_conf_builder(surface_conf_builder)
+       .clear_color(PURPLE)
+       .view(view)
+       .build()
+       .unwrap();
 
-    Model { 
-        battle: Battle::new() 
+    Model {
+        battle: Battle::new(),
+        image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(IMG_SIZE as u32, IMG_SIZE as u32)),
     }
 }
 
-fn event(_app: &App, _model: &mut Model, _event: WindowEvent)
+fn update(_app: &App, model: &mut Model, _update: Update)
 {
-}
+    model.battle.action();
 
-fn update(_app: &App, _model: &mut Model, _update: Update)
-{
-    _model.battle.action();
-}
-
-fn view(_app: &App, _model: &Model, frame: Frame)
-{
-    let mut pixels = nannou::image::RgbaImage::new(IMG_SIZE as u32, IMG_SIZE as u32);
-
-    for y in 0..IMG_SIZE
+    if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image
     {
-        for x in 0..IMG_SIZE
+        for (x, y, pixel) in pixels.enumerate_pixels_mut()
         {
-            let pokemon = &_model.battle.pokemons[y][x];
-            let color: [u8; 4] = pokemon.kind.into();
-            pixels.put_pixel(x as u32, y as u32, nannou::image::Rgba(color));
+            let pokemon = model.battle.pokemon(x, y);
+            *pixel = nannou::image::Rgb(pokemon.kind.into());
         }
     }
+}
 
-    let image = nannou::image::DynamicImage::ImageRgba8(pixels);
-    let texture = wgpu::Texture::from_image(_app, &image);
+fn view(app: &App, model: &Model, frame: Frame)
+{
+    let texture = wgpu::Texture::from_image(app, &model.image);
 
-    frame.clear(PURPLE);
-
-    let draw = _app.draw();
+    let draw = app.draw();
     draw.texture(&texture);
-    draw.to_frame(_app, &frame).unwrap();
+    draw.to_frame(app, &frame).unwrap();
 }

@@ -45,28 +45,26 @@ pub struct Pokemon
 
 impl Pokemon
 {
-    pub fn new(kind: PokemonType) -> Self
-    {
-        Pokemon {
-            health: 80,
-            damage: 40,
-            kind,
-        }
-    }
-
     pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
     {
         Pokemon {
-            health: 80, 
+            health: 80,
             damage: 40,
             kind: PokemonType::random(rng, die)
         }
     }
 
+    pub fn reset(&mut self, kind: PokemonType)
+    {
+        self.health = 80;
+        self.damage = 40;
+        self.kind = kind;
+    }
+
     pub fn take_damage(&mut self, damage: i32) -> bool
     {
         self.health -= damage;
-        
+
         self.health <= 0
     }
 }
