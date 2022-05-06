@@ -42,7 +42,7 @@ impl Battle
 
     pub fn pokemon(&self, x: u32, y: u32) -> &Pokemon
     {
-        return &self.pokemons[y as usize][x as usize];
+        &self.pokemons[y as usize][x as usize]
     }
 
     pub fn action(&mut self) -> u32
@@ -56,11 +56,12 @@ impl Battle
         let start = self.rng.gen_range(0 .. NUM_ENTRIES);
         let offset = PRIMES[self.rng.gen_range(0 .. PRIMES.len())];
         let mut current = start;
+
         loop
         {
             let attacker_loc = Location { x: current % IMG_SIZE, y: current / IMG_SIZE };
-            //let defender_loc = self._weakest_neighbour(attacker_loc);
-            let defender_loc = self._random_neighbour(attacker_loc);
+            let defender_loc = self._weakest_neighbour(attacker_loc);
+            //let defender_loc = self._random_neighbour(attacker_loc);
 
             if self.fight(attacker_loc, defender_loc)
             {
@@ -127,28 +128,27 @@ impl Battle
 
     pub fn _random_neighbour(&mut self, origin: Location) -> Location
     {
-        let location = Location { x: 0, y: 0 };
         if origin.is_outside()
         {
-            return location;
+            return Location { x: 0, y: 0 };
         }
 
         let direction = self.rng.gen_range(0 .. 4);
-        if direction == 0       // Go up
+        if direction == 0 // Go up
         {
             Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE }
         }
-        else if direction == 1  // Go right
+        else if direction == 1 // Go right
         {
             Location { x: (origin.x + 1) % IMG_SIZE , y: origin.y }
         }
-        else if direction == 2  // Go down
+        else if direction == 2 // Go down
         {
             Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE }
         }
-        else                    // Go left
+        else // Go left
         {
-            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE , y: origin.y }
+            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE, y: origin.y }
         }
     }
 }

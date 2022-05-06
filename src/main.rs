@@ -13,7 +13,7 @@ pub const IMG_SIZE: usize = 512;
 
 fn main()
 {
-    nannou::app(model).update(update).run();
+    nannou::app(model).update(update).exit(exit).run();
 }
 
 struct Model
@@ -60,4 +60,9 @@ fn view(app: &App, model: &Model, frame: Frame)
     let draw = app.draw();
     draw.texture(&texture);
     draw.to_frame(app, &frame).unwrap();
+}
+
+fn exit(_app: &App, _model: Model)
+{
+    
 }
