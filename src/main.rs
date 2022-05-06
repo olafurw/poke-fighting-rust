@@ -23,15 +23,11 @@ struct Model
 
 fn model(app: &App) -> Model
 {
-    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).event(event).view(view).build().unwrap();
+    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).view(view).build().unwrap();
 
-    Model { 
-        battle: Battle::new() 
+    Model {
+        battle: Battle::new()
     }
-}
-
-fn event(_app: &App, _model: &mut Model, _event: WindowEvent)
-{
 }
 
 fn update(_app: &App, _model: &mut Model, _update: Update)
