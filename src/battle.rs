@@ -20,7 +20,7 @@ impl Location
 
 pub struct Battle
 {
-    pub pokemons: Vec<Vec<Pokemon>>,
+    pokemons: Vec<Vec<Pokemon>>,
     rng: rand::rngs::ThreadRng,
 }
 
@@ -38,6 +38,11 @@ impl Battle
         }
 
         battle
+    }
+
+    pub fn pokemon(&self, x: u32, y: u32) -> &Pokemon
+    {
+        return &self.pokemons[y as usize][x as usize];
     }
 
     pub fn action(&mut self) -> u32

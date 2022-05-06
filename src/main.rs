@@ -40,7 +40,7 @@ fn update(_app: &App, model: &mut Model, _update: Update)
     {
         for (x, y, pixel) in pixels.enumerate_pixels_mut()
         {
-            let pokemon = &model.battle.pokemons[y as usize][x as usize];
+            let pokemon = model.battle.pokemon(x, y);
             *pixel = nannou::image::Rgb(pokemon.kind.into());
         }
     }
