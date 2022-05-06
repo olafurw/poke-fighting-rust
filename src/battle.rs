@@ -152,7 +152,7 @@ impl Battle
             return location;
         }
 
-        let mut neighbours = Vec::new();
+        let mut neighbours = Vec::with_capacity(4);
 
         if origin.y != 0 // there is a top neighbour
         {
