@@ -90,7 +90,7 @@ impl Battle
         let defender = &mut self.pokemons[defender_loc.y][defender_loc.x];
 
         let effectiveness = get_effectiveness_with_type(attacker_kind, defender.kind);
-        let damage: i32 = (attacker_damage as f32 * effectiveness) as i32;
+        let damage = attacker_damage * effectiveness / 100;
 
         let is_dead = defender.take_damage(damage);
         if is_dead
@@ -122,7 +122,7 @@ impl Battle
         *candidates.iter().max_by_key(|candidate|
         {
             let neighbour = &self.pokemons[candidate.y][candidate.x];
-            (get_effectiveness_with_type(pokemon.kind, neighbour.kind) * 10.0) as i32
+            get_effectiveness_with_type(pokemon.kind, neighbour.kind)
         }).unwrap()
     }
 
