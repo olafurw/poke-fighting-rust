@@ -1,5 +1,5 @@
-use rand::prelude::Distribution;
 use rand::distributions::Uniform;
+use rand::Rng;
 
 use crate::{Pokemon, IMG_SIZE, POKEMON_COUNT, get_effectiveness_with_type};
 
@@ -21,19 +21,19 @@ impl Location
 pub struct Battle
 {
     pub pokemons: Vec<Vec<Pokemon>>,
+    rng: rand::rngs::ThreadRng,
 }
 
 impl Battle
 {
     pub fn new() -> Self
     {
-        let mut rng = rand::thread_rng();
         let die = Uniform::from(0 .. POKEMON_COUNT);
 
-        let mut battle = Battle { pokemons: Vec::with_capacity(IMG_SIZE) };
+        let mut battle = Battle { pokemons: Vec::with_capacity(IMG_SIZE), rng: rand::thread_rng() };
         for _ in 0 .. IMG_SIZE
         {
-            let row = [(); IMG_SIZE].map(|_| Pokemon::random(&mut rng, &die));
+            let row = [(); IMG_SIZE].map(|_| Pokemon::random(&mut battle.rng, &die));
             battle.pokemons.push(Vec::from(row));
         }
 
@@ -144,7 +144,7 @@ impl Battle
         location
     }
 
-    pub fn _random_neighbour(&self, origin: Location) -> Location
+    pub fn _random_neighbour(&mut self, origin: Location) -> Location
     {
         let location = Location { x: 0, y: 0 };
         if origin.is_outside()
@@ -176,9 +176,6 @@ impl Battle
             return location;
         }
 
-        let mut rng = rand::thread_rng();
-        let die = Uniform::from(0 .. neighbours.len());
-
-        neighbours[die.sample(&mut rng)]
+        neighbours[self.rng.gen_range(0 .. neighbours.len())]
     }
 }
