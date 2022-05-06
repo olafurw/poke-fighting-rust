@@ -24,7 +24,14 @@ struct Model
 
 fn model(app: &App) -> Model
 {
-    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).clear_color(PURPLE).view(view).build().unwrap();
+    let surface_conf_builder = nannou::window::SurfaceConfigurationBuilder::new().present_mode(nannou::wgpu::PresentMode::Mailbox);
+    app.new_window()
+       .size(IMG_SIZE as u32, IMG_SIZE as u32)
+       .surface_conf_builder(surface_conf_builder)
+       .clear_color(PURPLE)
+       .view(view)
+       .build()
+       .unwrap();
 
     Model {
         battle: Battle::new(),
