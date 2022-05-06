@@ -60,8 +60,8 @@ impl Battle
         loop
         {
             let attacker_loc = Location { x: current % IMG_SIZE, y: current / IMG_SIZE };
-            //let defender_loc = self._weakest_neighbour(attacker_loc);
-            let defender_loc = self._random_neighbour(attacker_loc);
+            let defender_loc = self._weakest_neighbour(attacker_loc);
+            //let defender_loc = self._random_neighbour(attacker_loc);
 
             if self.fight(attacker_loc, defender_loc)
             {
@@ -107,57 +107,33 @@ impl Battle
     pub fn _weakest_neighbour(&self, origin: Location) -> Location
     {
         let mut highest_effectiveness: f32 = 0.0;
-        let mut location = Location { x: 0, y: 0 };
         if origin.is_outside()
         {
-            return location;
+            return Location { x: 0, y: 0 };
         }
 
         let pokemon = &self.pokemons[origin.y][origin.x];
 
-        // waage todo: refactor these 4, they do similar things
-        if origin.y != 0 // there is a top neighbour
+        let neigbours = [
+            Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE },
+            Location { x: (origin.x + 1) % IMG_SIZE, y: origin.y },
+            Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE },
+            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE, y: origin.y },
+        ];
+
+        let mut highest_index = 0;
+        for (index, location) in neigbours.into_iter().enumerate()
         {
-            let neighbour = &self.pokemons[origin.y - 1][origin.x];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
+            let neighbour_pokemon = &self.pokemons[location.y][location.x];
+            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour_pokemon.kind);
             if effectiveness > highest_effectiveness
             {
                 highest_effectiveness = effectiveness;
-                location = Location { x: origin.x, y: origin.y - 1 };
-            }
-        }
-        if origin.x != IMG_SIZE - 1 // there is a right neighbour
-        {
-            let neighbour = &self.pokemons[origin.y][origin.x + 1];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                highest_effectiveness = effectiveness;
-                location = Location { x: origin.x + 1, y: origin.y };
-            }
-        }
-        if origin.y != IMG_SIZE - 1 // there is a bottom neighbour
-        {
-            let neighbour = &self.pokemons[origin.y + 1][origin.x];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                highest_effectiveness = effectiveness;
-                location = Location { x: origin.x, y: origin.y + 1 };
-            }
-        }
-        if origin.x != 0 // there is a left neighbour
-        {
-            let neighbour = &self.pokemons[origin.y][origin.x - 1];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour.kind);
-            if effectiveness > highest_effectiveness
-            {
-                //highest_effectiveness = effectiveness;
-                location = Location { x: origin.x - 1, y: origin.y };
+                highest_index = index;
             }
         }
 
-        location
+        neigbours[highest_index]
     }
 
     pub fn _random_neighbour(&mut self, origin: Location) -> Location
@@ -168,21 +144,21 @@ impl Battle
         }
 
         let direction = self.rng.gen_range(0 .. 4);
-        if direction == 0       // Go up
+        if direction == 0 // Go up
         {
             Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE }
         }
-        else if direction == 1  // Go right
+        else if direction == 1 // Go right
         {
             Location { x: (origin.x + 1) % IMG_SIZE , y: origin.y }
         }
-        else if direction == 2  // Go down
+        else if direction == 2 // Go down
         {
             Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE }
         }
-        else                    // Go left
+        else // Go left
         {
-            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE , y: origin.y }
+            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE, y: origin.y }
         }
     }
 }
