@@ -24,7 +24,7 @@ struct Model
 
 fn model(app: &App) -> Model
 {
-    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).view(view).build().unwrap();
+    app.new_window().size(IMG_SIZE as u32, IMG_SIZE as u32).clear_color(PURPLE).view(view).build().unwrap();
 
     Model {
         battle: Battle::new(),
@@ -49,8 +49,6 @@ fn update(_app: &App, model: &mut Model, _update: Update)
 fn view(app: &App, model: &Model, frame: Frame)
 {
     let texture = wgpu::Texture::from_image(app, &model.image);
-
-    frame.clear(PURPLE);
 
     let draw = app.draw();
     draw.texture(&texture);
