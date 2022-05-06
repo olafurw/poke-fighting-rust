@@ -44,19 +44,18 @@ impl Battle
     {
         let mut death_count = 0;
 
-        let action_count = IMG_SIZE * IMG_SIZE;
-        for n in 0..action_count
+        for x in 0..IMG_SIZE
         {
-            let x = n % IMG_SIZE;
-            let y = (n as f32 / IMG_SIZE as f32) as usize;
-
-            let attacker_loc = Location { x, y };
-            //let defender_loc = self._weakest_neighbour(attacker_loc);
-            let defender_loc = self._random_neighbour(attacker_loc);
-
-            if self.fight(attacker_loc, defender_loc)
+            for y in 0..IMG_SIZE
             {
-                death_count += 1;
+                let attacker_loc = Location { x, y };
+                //let defender_loc = self._weakest_neighbour(attacker_loc);
+                let defender_loc = self._random_neighbour(attacker_loc);
+
+                if self.fight(attacker_loc, defender_loc)
+                {
+                    death_count += 1;
+                }
             }
         }
 
