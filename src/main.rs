@@ -38,14 +38,10 @@ fn update(_app: &App, model: &mut Model, _update: Update)
 
     if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image
     {
-        for y in 0..IMG_SIZE
+        for (x, y, pixel) in pixels.enumerate_pixels_mut()
         {
-            for x in 0..IMG_SIZE
-            {
-                let pokemon = &model.battle.pokemons[y][x];
-                let color: [u8; 3] = pokemon.kind.into();
-                pixels.put_pixel(x as u32, y as u32, nannou::image::Rgb(color));
-            }
+            let pokemon = &model.battle.pokemons[y as usize][x as usize];
+            *pixel = nannou::image::Rgb(pokemon.kind.into());
         }
     }
 }
