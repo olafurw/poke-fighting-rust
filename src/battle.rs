@@ -47,20 +47,30 @@ impl Battle
 
     pub fn action(&mut self) -> u32
     {
+        // We use prime numbers as offsets to loop through the entries in a semi-random fashion.
+        // These particular prime numbers have been chosen by a fair dice roll.
+        const PRIMES: &[usize] = &[48817, 58099, 89867, 105407, 126943, 200723, 221021, 231677];
+        const NUM_ENTRIES: usize = IMG_SIZE * IMG_SIZE;
+
         let mut death_count = 0;
-
-        for x in 0..IMG_SIZE
+        let start = self.rng.gen_range(0 .. NUM_ENTRIES);
+        let offset = PRIMES[self.rng.gen_range(0 .. PRIMES.len())];
+        let mut current = start;
+        loop
         {
-            for y in 0..IMG_SIZE
-            {
-                let attacker_loc = Location { x, y };
-                //let defender_loc = self._weakest_neighbour(attacker_loc);
-                let defender_loc = self._random_neighbour(attacker_loc);
+            let attacker_loc = Location { x: current % IMG_SIZE, y: current / IMG_SIZE };
+            //let defender_loc = self._weakest_neighbour(attacker_loc);
+            let defender_loc = self._random_neighbour(attacker_loc);
 
-                if self.fight(attacker_loc, defender_loc)
-                {
-                    death_count += 1;
-                }
+            if self.fight(attacker_loc, defender_loc)
+            {
+                death_count += 1;
+            }
+
+            current = (current + offset) % NUM_ENTRIES;
+            if current == start
+            {
+                break;
             }
         }
 
