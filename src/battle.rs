@@ -106,7 +106,6 @@ impl Battle
 
     pub fn _weakest_neighbour(&self, origin: Location) -> Location
     {
-        let mut highest_effectiveness: f32 = 0.0;
         if origin.is_outside()
         {
             return Location { x: 0, y: 0 };
@@ -114,26 +113,17 @@ impl Battle
 
         let pokemon = &self.pokemons[origin.y][origin.x];
 
-        let neigbours = [
+        let candidates = [
             Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE },
             Location { x: (origin.x + 1) % IMG_SIZE, y: origin.y },
             Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE },
             Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE, y: origin.y },
         ];
-
-        let mut highest_index = 0;
-        for (index, location) in neigbours.into_iter().enumerate()
+        *candidates.iter().max_by_key(|candidate|
         {
-            let neighbour_pokemon = &self.pokemons[location.y][location.x];
-            let effectiveness = get_effectiveness_with_type(pokemon.kind, neighbour_pokemon.kind);
-            if effectiveness > highest_effectiveness
-            {
-                highest_effectiveness = effectiveness;
-                highest_index = index;
-            }
-        }
-
-        neigbours[highest_index]
+            let neighbour = &self.pokemons[candidate.y][candidate.x];
+            (get_effectiveness_with_type(pokemon.kind, neighbour.kind) * 10.0) as i32
+        }).unwrap()
     }
 
     pub fn _random_neighbour(&mut self, origin: Location) -> Location
