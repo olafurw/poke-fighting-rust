@@ -157,30 +157,22 @@ impl Battle
             return location;
         }
 
-        let mut neighbours = Vec::with_capacity(4);
-
-        if origin.y != 0 // there is a top neighbour
+        let direction = self.rng.gen_range(0 .. 4);
+        if direction == 0       // Go up
         {
-            neighbours.push(Location { x: origin.x, y: origin.y - 1 });
+            Location { x: origin.x, y: (origin.y + IMG_SIZE - 1) % IMG_SIZE }
         }
-        if origin.x != IMG_SIZE - 1 // there is a right neighbour
+        else if direction == 1  // Go right
         {
-            neighbours.push(Location { x: origin.x + 1, y: origin.y });
+            Location { x: (origin.x + 1) % IMG_SIZE , y: origin.y }
         }
-        if origin.y != IMG_SIZE - 1 // there is a bottom neighbour
+        else if direction == 2  // Go down
         {
-            neighbours.push(Location { x: origin.x, y: origin.y + 1 });
+            Location { x: origin.x, y: (origin.y + 1) % IMG_SIZE }
         }
-        if origin.x != 0 // there is a left neighbour
+        else                    // Go left
         {
-            neighbours.push(Location { x: origin.x - 1, y: origin.y });
+            Location { x: (origin.x + IMG_SIZE - 1) % IMG_SIZE , y: origin.y }
         }
-
-        if neighbours.is_empty()
-        {
-            return location;
-        }
-
-        neighbours[self.rng.gen_range(0 .. neighbours.len())]
     }
 }
