@@ -1,8 +1,8 @@
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
-use num_enum::IntoPrimitive;
+use num_enum::{IntoPrimitive, TryFromPrimitive};
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
 #[repr(usize)]
 pub enum PokemonType
 {
@@ -31,37 +31,8 @@ impl PokemonType
 	pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
 	{
 		let value = die.sample(rng);
-		PokemonType::from(value)
+		PokemonType::try_from(value).unwrap()
 	}
-}
-
-impl From<usize> for PokemonType
-{
-    fn from(value: usize) -> Self
-	{
-		match value
-		{
-			0 => PokemonType::Normal,
-			1 => PokemonType::Fire,
-			2 => PokemonType::Water,
-			3 => PokemonType::Electric,
-			4 => PokemonType::Grass,
-			5 => PokemonType::Ice,
-			6 => PokemonType::Fighting,
-			7 => PokemonType::Poison,
-			8 => PokemonType::Ground,
-			9 => PokemonType::Flying,
-			10 => PokemonType::Psychic,
-			11 => PokemonType::Bug,
-			12 => PokemonType::Rock,
-			13 => PokemonType::Ghost,
-			14 => PokemonType::Dragon,
-			15 => PokemonType::Dark,
-			16 => PokemonType::Steel,
-			17 => PokemonType::Fairy,
-			_ => panic!("From<usize> for PokemonType: {}", value),
-		}
-    }
 }
 
 impl From<PokemonType> for [u8; 3]
