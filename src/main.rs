@@ -1,3 +1,4 @@
+use clap::Parser;
 use nannou::prelude::*;
 
 mod types;
@@ -9,11 +10,40 @@ use crate::pokemon::*;
 mod battle;
 use crate::battle::*;
 
-pub const IMG_SIZE: usize = 512;
+/// Pokemon battle simulation
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args
+{
+    /// Image width
+    #[clap(short='w', long, default_value_t = 512, validator = validate_size)]
+    width: usize,
+
+    /// Image height
+    #[clap(short='h', long, default_value_t = 512, validator = validate_size)]
+    height: usize,
+
+    /// When fighting, select random neighbour instead of the weakest one
+    #[clap(short='r', long)]
+    random: bool,
+}
 
 fn main()
 {
     nannou::app(model).update(update).exit(exit).run();
+}
+
+fn validate_size(arg: &str) -> Result<(), String>
+{
+    if let Ok(size) = arg.parse::<usize>()
+    {
+        // wgpu won't allow more than 8192 pixels
+        if size < 32 || size > 8192
+        {
+            return Err("image size should be between 32 and 8192".to_string());
+        }
+    }
+    return Ok(());
 }
 
 struct Model
@@ -24,9 +54,14 @@ struct Model
 
 fn model(app: &App) -> Model
 {
+    let args = Args::parse();
+    let img_width = args.width;
+    let img_height = args.height;
+    let selection_algorithm = if args.random { SelectionAlgorithm::RandomNeighbour } else { SelectionAlgorithm::WeakestNeighbour };
+
     let surface_conf_builder = nannou::window::SurfaceConfigurationBuilder::new().present_mode(nannou::wgpu::PresentMode::Mailbox);
     app.new_window()
-       .size(IMG_SIZE as u32, IMG_SIZE as u32)
+       .size(img_width as u32, img_height as u32)
        .surface_conf_builder(surface_conf_builder)
        .clear_color(PURPLE)
        .view(view)
@@ -34,8 +69,8 @@ fn model(app: &App) -> Model
        .unwrap();
 
     Model {
-        battle: Battle::new(),
-        image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(IMG_SIZE as u32, IMG_SIZE as u32)),
+        battle: Battle::new(img_width, img_height, selection_algorithm),
+        image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
     }
 }
 
