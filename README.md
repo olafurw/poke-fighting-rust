@@ -2,7 +2,7 @@
 
 Rust project that simulates a grid of Pokémon fighting with each other.
 
-Each Pokémon type is a pixel and is represented by a color.
+Each Pokémon type is a pixel on the grid and is represented by a color.
 
 Every frame an attack is done by a Pokémon that will pick a random neighbour, 
 if that neighbour faints they will turn into a pokemon of the same type as the attacker.
