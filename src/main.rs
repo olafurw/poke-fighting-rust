@@ -48,7 +48,7 @@ fn update(_app: &App, model: &mut Model, _update: Update)
         for (x, y, pixel) in pixels.enumerate_pixels_mut()
         {
             let pokemon = model.battle.pokemon(x, y);
-            *pixel = nannou::image::Rgb(pokemon.kind.into());
+            *pixel = pokemon.kind.into();
         }
     }
 }
@@ -64,5 +64,5 @@ fn view(app: &App, model: &Model, frame: Frame)
 
 fn exit(_app: &App, _model: Model)
 {
-    
+
 }
