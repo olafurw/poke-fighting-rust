@@ -70,8 +70,9 @@ impl Pokemon
 
 #[cfg(test)]
 mod tests {
-    use crate::types::PokemonType;
-    use crate::get_effectiveness_with_type;
+    use crate::types::{PokemonType, POKEMON_COUNT};
+    use crate::{Pokemon, get_effectiveness_with_type};
+    use rand::distributions::Uniform;
 
     #[test]
     fn test_get_effectiveness()
@@ -79,5 +80,45 @@ mod tests {
         assert_eq!(get_effectiveness_with_type(PokemonType::Normal, PokemonType::Normal), 100);
         assert_eq!(get_effectiveness_with_type(PokemonType::Fire, PokemonType::Steel), 200);
         assert_eq!(get_effectiveness_with_type(PokemonType::Water, PokemonType::Grass),  50);
+    }
+
+    #[test]
+    fn test_damage()
+    {
+        let mut rng = rand::thread_rng();
+        let die = Uniform::from(0 .. POKEMON_COUNT);
+
+        let mut p1 = Pokemon::random(&mut rng, &die);
+        let health = p1.health;
+        let dead = p1.take_damage(40);
+
+        assert_ne!(health, p1.health);
+        assert!(!dead);
+
+        let health = p1.health;
+        let dead = p1.take_damage(40);
+
+        assert_ne!(health, p1.health);
+        assert!(dead);
+    }
+
+    #[test]
+    fn test_reset()
+    {
+        let mut rng = rand::thread_rng();
+        let die = Uniform::from(0 .. POKEMON_COUNT);
+
+        let mut p1 = Pokemon::random(&mut rng, &die);
+        p1.reset(PokemonType::Fire);
+        assert_eq!(p1.kind, PokemonType::Fire);
+
+        let dead = p1.take_damage(80);
+        assert!(dead);
+
+        p1.reset(PokemonType::Dragon);
+        assert_eq!(p1.kind, PokemonType::Dragon);
+
+        let dead = p1.take_damage(40);
+        assert!(!dead);
     }
 }
