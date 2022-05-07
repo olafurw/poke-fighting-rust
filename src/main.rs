@@ -16,11 +16,11 @@ use crate::battle::*;
 struct Args
 {
     /// Image width
-    #[clap(short='w', long, default_value_t = 512)]
+    #[clap(short='w', long, default_value_t = 512, validator = validate_size)]
     width: usize,
 
     /// Image height
-    #[clap(short='h', long, default_value_t = 512)]
+    #[clap(short='h', long, default_value_t = 512, validator = validate_size)]
     height: usize,
 
     /// When fighting, select random neighbour instead of the weakest one
@@ -31,6 +31,19 @@ struct Args
 fn main()
 {
     nannou::app(model).update(update).exit(exit).run();
+}
+
+fn validate_size(arg: &str) -> Result<(), String>
+{
+    if let Ok(size) = arg.parse::<usize>()
+    {
+        // wgpu won't allow more than 8192 pixels
+        if size < 32 || size > 8192
+        {
+            return Err("image size should be between 32 and 8192".to_string());
+        }
+    }
+    return Ok(());
 }
 
 struct Model
