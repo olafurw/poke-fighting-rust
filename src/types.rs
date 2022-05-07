@@ -71,25 +71,25 @@ impl From<PokemonType> for Rgb<u8>
 	{
 		match kind
 		{
-			PokemonType::Normal => [168,168,120].into(),
-			PokemonType::Fire => [240,128,48].into(),
-			PokemonType::Water => [104,144,240].into(),
-			PokemonType::Electric => [248,208,48].into(),
-			PokemonType::Grass => [120,200,80].into(),
-			PokemonType::Ice => [152,216,216].into(),
-			PokemonType::Fighting => [192,48,40].into(),
-			PokemonType::Poison => [160,64,160].into(),
-			PokemonType::Ground => [224,192,104].into(),
-			PokemonType::Flying => [168,144,240].into(),
-			PokemonType::Psychic => [248,88,136].into(),
-			PokemonType::Bug => [168,184,32].into(),
-			PokemonType::Rock => [184,160,56].into(),
-			PokemonType::Ghost => [112,88,152].into(),
-			PokemonType::Dragon => [112,56,248].into(),
-			PokemonType::Dark => [112,88,72].into(),
-			PokemonType::Steel => [184,184,208].into(),
-			PokemonType::Fairy => [240,182,188].into(),
-		}
+			PokemonType::Normal => [168,168,120],
+			PokemonType::Fire => [240,128,48],
+			PokemonType::Water => [104,144,240],
+			PokemonType::Electric => [248,208,48],
+			PokemonType::Grass => [120,200,80],
+			PokemonType::Ice => [152,216,216],
+			PokemonType::Fighting => [192,48,40],
+			PokemonType::Poison => [160,64,160],
+			PokemonType::Ground => [224,192,104],
+			PokemonType::Flying => [168,144,240],
+			PokemonType::Psychic => [248,88,136],
+			PokemonType::Bug => [168,184,32],
+			PokemonType::Rock => [184,160,56],
+			PokemonType::Ghost => [112,88,152],
+			PokemonType::Dragon => [112,56,248],
+			PokemonType::Dark => [112,88,72],
+			PokemonType::Steel => [184,184,208],
+			PokemonType::Fairy => [240,182,188],
+		}.into()
     }
 }
 
