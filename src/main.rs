@@ -15,9 +15,13 @@ use crate::battle::*;
 #[clap(author, version, about, long_about = None)]
 struct Args
 {
-    /// Image size
-    #[clap(short='s', long, default_value_t = 512)]
-    size: usize,
+    /// Image width
+    #[clap(short='w', long, default_value_t = 512)]
+    width: usize,
+
+    /// Image height
+    #[clap(short='h', long, default_value_t = 512)]
+    height: usize,
 
     /// When fighting, select random neighbour instead of the weakest one
     #[clap(short='r', long)]
@@ -38,12 +42,13 @@ struct Model
 fn model(app: &App) -> Model
 {
     let args = Args::parse();
-    let img_size = args.size;
+    let img_width = args.width;
+    let img_height = args.height;
     let selection_algorithm = if args.random { SelectionAlgorithm::RandomNeighbour } else { SelectionAlgorithm::WeakestNeighbour };
 
     let surface_conf_builder = nannou::window::SurfaceConfigurationBuilder::new().present_mode(nannou::wgpu::PresentMode::Mailbox);
     app.new_window()
-       .size(img_size as u32, img_size as u32)
+       .size(img_width as u32, img_height as u32)
        .surface_conf_builder(surface_conf_builder)
        .clear_color(PURPLE)
        .view(view)
@@ -51,8 +56,8 @@ fn model(app: &App) -> Model
        .unwrap();
 
     Model {
-        battle: Battle::new(img_size, selection_algorithm),
-        image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_size as u32, img_size as u32)),
+        battle: Battle::new(img_width, img_height, selection_algorithm),
+        image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
     }
 }
 
