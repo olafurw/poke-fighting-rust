@@ -51,6 +51,9 @@ struct Model
 {
     battle: Battle,
     image: nannou::image::DynamicImage,
+    display: nannou::image::DynamicImage,
+    window_width: u32,
+    window_height: u32,
 }
 
 fn model(app: &App) -> Model
@@ -66,12 +69,16 @@ fn model(app: &App) -> Model
        .surface_conf_builder(surface_conf_builder)
        .clear_color(PURPLE)
        .view(view)
+       .event(event)
        .build()
        .unwrap();
 
     Model {
         battle: Battle::new(img_width, img_height, selection_algorithm),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
+        display: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
+        window_width: img_width as u32,
+        window_height: img_height as u32,
     }
 }
 
@@ -87,16 +94,28 @@ fn update(_app: &App, model: &mut Model, _update: Update)
             *pixel = pokemon.kind.into();
         }
     }
+
+    model.display = model.image.resize_to_fill(model.window_width, model.window_height, nannou::image::imageops::FilterType::Nearest);
 }
 
 fn view(app: &App, model: &Model, frame: Frame)
 {
-    let texture = wgpu::Texture::from_image(app, &model.image);
+    let texture = wgpu::Texture::from_image(app, &model.display);
 
     let draw = app.draw();
     draw.texture(&texture);
     draw.to_frame(app, &frame).unwrap();
 }
+
+fn event(_app: &App, model: &mut Model, ev: nannou::event::WindowEvent)
+{
+    if let WindowEvent::Resized(resized) = &ev
+    {
+        model.window_width = resized.x as u32;
+        model.window_height = resized.y as u32;
+    }
+}
+
 
 fn exit(_app: &App, _model: Model)
 {
