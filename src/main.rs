@@ -64,5 +64,5 @@ fn view(app: &App, model: &Model, frame: Frame)
 
 fn exit(_app: &App, _model: Model)
 {
-    
+
 }

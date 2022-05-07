@@ -1,9 +1,8 @@
 use rand::prelude::ThreadRng;
 use rand::distributions::Uniform;
 
-use crate::PokemonType;
+use crate::{PokemonType, POKEMON_COUNT};
 
-pub const POKEMON_COUNT: usize = 18;
 pub const POKEMON: [[i32; POKEMON_COUNT]; POKEMON_COUNT] = [
 	[ 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,  50,   0, 100, 100,  50, 100 ], // Normal
 	[ 100,  50,  50, 100, 200, 200, 100, 100, 100, 100, 100, 200,  50, 100,  50, 100, 200, 100 ], // Fire

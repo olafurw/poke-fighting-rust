@@ -1,8 +1,8 @@
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
-use num_enum::IntoPrimitive;
+use strum::{FromRepr,EnumCount};
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
 pub enum PokemonType
 {
@@ -26,41 +26,22 @@ pub enum PokemonType
 	Fairy
 }
 
+pub const POKEMON_COUNT: usize = PokemonType::COUNT;
+
 impl PokemonType
 {
 	pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
 	{
 		let value = die.sample(rng);
-		PokemonType::from(value)
+		PokemonType::from_repr(value).unwrap()
 	}
 }
 
-impl From<usize> for PokemonType
+impl From<PokemonType> for usize
 {
-    fn from(value: usize) -> Self
-	{
-		match value
-		{
-			0 => PokemonType::Normal,
-			1 => PokemonType::Fire,
-			2 => PokemonType::Water,
-			3 => PokemonType::Electric,
-			4 => PokemonType::Grass,
-			5 => PokemonType::Ice,
-			6 => PokemonType::Fighting,
-			7 => PokemonType::Poison,
-			8 => PokemonType::Ground,
-			9 => PokemonType::Flying,
-			10 => PokemonType::Psychic,
-			11 => PokemonType::Bug,
-			12 => PokemonType::Rock,
-			13 => PokemonType::Ghost,
-			14 => PokemonType::Dragon,
-			15 => PokemonType::Dark,
-			16 => PokemonType::Steel,
-			17 => PokemonType::Fairy,
-			_ => panic!("From<usize> for PokemonType: {}", value),
-		}
+    fn from(kind: PokemonType) -> Self
+    {
+        kind as Self
     }
 }
 
@@ -99,7 +80,7 @@ mod tests {
     #[test]
     fn convert_type_from_usize()
     {
-        assert_eq!(PokemonType::from(0), PokemonType::Normal);
-        assert_eq!(PokemonType::from(17), PokemonType::Fairy);
+        assert_eq!(PokemonType::from_repr(0).unwrap(), PokemonType::Normal);
+        assert_eq!(PokemonType::from_repr(17).unwrap(), PokemonType::Fairy);
     }
 }
