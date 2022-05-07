@@ -38,12 +38,13 @@ fn validate_size(arg: &str) -> Result<(), String>
     if let Ok(size) = arg.parse::<usize>()
     {
         // wgpu won't allow more than 8192 pixels
-        if size < 32 || size > 8192
+        if !(32..8193).contains(&size)
         {
             return Err("image size should be between 32 and 8192".to_string());
         }
     }
-    return Ok(());
+
+    Ok(())
 }
 
 struct Model
