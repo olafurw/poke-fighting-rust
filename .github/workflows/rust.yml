@@ -1,0 +1,39 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          target_name: 'poke-fighting-rust'
+        - os: windows-latest
+          target_name: 'poke-fighting-rust.exe'
+        - os: macos-latest
+          target_name: 'poke-fighting-rust'
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release --verbose
+    - name: Strip symbols
+      run: strip target/release/${{ matrix.target_name }}
+    - name: Upload poke-fighting-rust artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.target_name }} ${{ matrix.os }}
+        path: target/release/${{ matrix.target_name }}
+    - name: Run tests
+      run: cargo test --verbose
