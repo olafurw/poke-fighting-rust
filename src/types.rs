@@ -1,8 +1,8 @@
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
-use num_enum::{IntoPrimitive, TryFromPrimitive};
+use strum::{FromRepr,EnumCount};
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
 pub enum PokemonType
 {
@@ -26,13 +26,23 @@ pub enum PokemonType
 	Fairy
 }
 
+pub const POKEMON_COUNT: usize = PokemonType::COUNT;
+
 impl PokemonType
 {
 	pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
 	{
 		let value = die.sample(rng);
-		PokemonType::try_from(value).unwrap()
+		PokemonType::from_repr(value).unwrap()
 	}
+}
+
+impl From<PokemonType> for usize
+{
+    fn from(kind: PokemonType) -> Self
+    {
+        kind as Self
+    }
 }
 
 impl From<PokemonType> for [u8; 3]
