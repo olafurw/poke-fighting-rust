@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn convert_type_from_usize()
     {
-        assert_eq!(PokemonType::from(0), PokemonType::Normal);
-        assert_eq!(PokemonType::from(17), PokemonType::Fairy);
+        assert_eq!(PokemonType::from_repr(0).unwrap(), PokemonType::Normal);
+        assert_eq!(PokemonType::from_repr(17).unwrap(), PokemonType::Fairy);
     }
 }
