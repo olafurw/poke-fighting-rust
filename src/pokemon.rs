@@ -1,7 +1,7 @@
 use rand::prelude::ThreadRng;
 use rand::distributions::Uniform;
 
-use crate::{PokemonType, POKEMON_COUNT};
+use crate::types::{PokemonType, POKEMON_COUNT};
 
 pub const POKEMON: [[i32; POKEMON_COUNT]; POKEMON_COUNT] = [
 	[ 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,  50,   0, 100, 100,  50, 100 ], // Normal
@@ -70,9 +70,7 @@ impl Pokemon
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{PokemonType, POKEMON_COUNT};
-    use crate::{Pokemon, get_effectiveness_with_type};
-    use rand::distributions::Uniform;
+    use super::*;
 
     #[test]
     fn test_get_effectiveness()

@@ -1,7 +1,8 @@
 use rand::distributions::Uniform;
 use rand::Rng;
 
-use crate::{Pokemon, POKEMON_COUNT, get_effectiveness_with_type};
+use crate::pokemon::{Pokemon, get_effectiveness_with_type};
+use crate::types::POKEMON_COUNT;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Location

@@ -76,7 +76,7 @@ impl From<PokemonType> for Rgb<u8>
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{PokemonType};
+    use super::*;
 
     #[test]
     fn convert_type_from_usize()
