@@ -1,5 +1,6 @@
 use clap::Parser;
 use nannou::prelude::*;
+use nannou::image::GenericImageView;
 
 mod types;
 use crate::types::*;
@@ -51,7 +52,6 @@ struct Model
 {
     battle: Battle,
     image: nannou::image::DynamicImage,
-    display: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
 }
@@ -76,7 +76,6 @@ fn model(app: &App) -> Model
     Model {
         battle: Battle::new(img_width, img_height, selection_algorithm),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
-        display: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
     }
@@ -94,16 +93,25 @@ fn update(_app: &App, model: &mut Model, _update: Update)
             *pixel = pokemon.kind.into();
         }
     }
-
-    model.display = model.image.resize_to_fill(model.window_width, model.window_height, nannou::image::imageops::FilterType::Nearest);
 }
 
 fn view(app: &App, model: &Model, frame: Frame)
 {
-    let texture = wgpu::Texture::from_image(app, &model.display);
+    let texture = wgpu::Texture::from_image(app, &model.image);
+    let (image_width, image_height) = model.image.dimensions();
+    let width_ratio = model.window_width as f32 / image_width as f32;
+    let height_ratio = model.window_height as f32 / image_height as f32;
+    let ratio = if width_ratio < height_ratio { width_ratio } else { height_ratio };
 
     let draw = app.draw();
-    draw.texture(&texture);
+    if ratio == 1.0
+    {
+        draw.texture(&texture);
+    }
+    else
+    {
+        draw.texture(&texture).width(ratio * image_width as f32).height(ratio * image_height as f32);
+    }
     draw.to_frame(app, &frame).unwrap();
 }
 
