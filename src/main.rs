@@ -27,6 +27,10 @@ struct Args
     /// When fighting, select random neighbour instead of the weakest one
     #[clap(short='r', long)]
     random: bool,
+
+    /// Measure frame rate and print it to stdout
+    #[clap(short='f', long)]
+    framerate: bool,
 }
 
 fn main()
@@ -54,6 +58,9 @@ struct Model
     image: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
+    measure_framerate: bool,
+    measure_start: std::time::Instant,
+    counter: usize,
 }
 
 fn model(app: &App) -> Model
@@ -78,6 +85,9 @@ fn model(app: &App) -> Model
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
+        measure_framerate: args.framerate,
+        measure_start: std::time::Instant::now(),
+        counter: 0,
     }
 }
 
@@ -91,6 +101,19 @@ fn update(_app: &App, model: &mut Model, _update: Update)
         {
             let pokemon = model.battle.pokemon(x, y);
             *pixel = pokemon.kind.into();
+        }
+    }
+
+    if model.measure_framerate
+    {
+        const MEASURE_FRAMES_COUNT: usize = 100;
+
+        model.counter += 1;
+        if model.counter % MEASURE_FRAMES_COUNT == 0
+        {
+            let framerate = MEASURE_FRAMES_COUNT as f32 / model.measure_start.elapsed().as_secs_f32();
+            println!("Frame rate: {:.2}", framerate);
+            model.measure_start = std::time::Instant::now();
         }
     }
 }
