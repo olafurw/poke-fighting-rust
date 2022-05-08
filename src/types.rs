@@ -1,6 +1,3 @@
-use rand::distributions::{Distribution, Uniform};
-use rand::prelude::ThreadRng;
-
 #[derive(Debug)]
 pub enum FighterType
 {

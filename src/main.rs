@@ -1,18 +1,7 @@
-#![allow(unused_imports, dead_code)]
-
 use clap::Parser;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use nannou::image::GenericImageView;
-
-mod types;
-mod pokemon;
-mod rps;
-mod battle;
-
-use battle::{Battle, Fighter, SelectionAlgorithm};
-use pokemon::{Pokemon};
-use rps::{RPS};
-use types::{FighterType, RandomlyGeneratable, Colored};
+use poke_fighting_rust::{Battle, Colored, Fighter, FighterType, Pokemon, RandomlyGeneratable, RPS, SelectionAlgorithm};
 
 /// Battle simulation
 #[derive(Parser, Debug)]
