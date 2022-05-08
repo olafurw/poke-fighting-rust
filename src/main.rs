@@ -1,5 +1,5 @@
 use clap::Parser;
-use nannou::prelude::*;
+use nannou::prelude::{App, Frame, Update, WindowEvent};
 use nannou::image::GenericImageView;
 
 mod types;
@@ -63,7 +63,7 @@ fn model(app: &App) -> Model
     app.new_window()
        .size(img_width as u32, img_height as u32)
        .surface_conf_builder(surface_conf_builder)
-       .clear_color(PURPLE)
+       .clear_color(nannou::color::PURPLE)
        .view(view)
        .event(event)
        .build()
@@ -93,7 +93,7 @@ fn update(_app: &App, model: &mut Model, _update: Update)
 
 fn view(app: &App, model: &Model, frame: Frame)
 {
-    let texture = wgpu::Texture::from_image(app, &model.image);
+    let texture = nannou::wgpu::Texture::from_image(app, &model.image);
     let (image_width, image_height) = model.image.dimensions();
     let width_ratio = model.window_width as f32 / image_width as f32;
     let height_ratio = model.window_height as f32 / image_height as f32;
