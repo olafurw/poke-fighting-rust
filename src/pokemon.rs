@@ -71,7 +71,6 @@ impl Pokemon
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::distributions::Uniform;
 
     #[test]
     fn test_get_effectiveness()
