@@ -3,13 +3,9 @@ use nannou::prelude::*;
 use nannou::image::GenericImageView;
 
 mod types;
-use crate::types::*;
-
 mod pokemon;
-use crate::pokemon::*;
-
 mod battle;
-use crate::battle::*;
+use battle::{Battle, SelectionAlgorithm};
 
 /// Pokemon battle simulation
 #[derive(Parser, Debug)]
