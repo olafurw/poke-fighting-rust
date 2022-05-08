@@ -139,7 +139,14 @@ impl Battle
         *candidates.iter().max_by_key(|candidate|
         {
             let neighbour = &self.pokemons[candidate.y][candidate.x];
-            get_effectiveness_with_type(pokemon.kind, neighbour.kind)
+            if pokemon.kind != neighbour.kind
+            {
+                get_effectiveness_with_type(pokemon.kind, neighbour.kind)
+            }
+            else
+            {
+                0
+            }
         }).unwrap()
     }
 
