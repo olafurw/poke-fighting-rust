@@ -177,7 +177,7 @@ mod tests {
     {
         assert_eq!(
             RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Scissor)),
-            1
+            100
         );
     }
 
