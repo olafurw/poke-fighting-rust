@@ -1,4 +1,5 @@
 use rand::Rng;
+use rand::seq::IteratorRandom;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Location {
@@ -9,6 +10,27 @@ pub struct Location {
 impl Location {
     pub fn is_outside(&self, img_width: usize, img_height: usize) -> bool {
         self.x > img_width || self.y > img_height
+    }
+
+    pub fn neighbours(&self, img_width: usize, img_height: usize) -> [Location; 4] {
+        [
+            Location {
+                x: self.x,
+                y: (self.y + img_height - 1) % img_height,
+            },
+            Location {
+                x: (self.x + 1) % img_width,
+                y: self.y,
+            },
+            Location {
+                x: self.x,
+                y: (self.y + 1) % img_height,
+            },
+            Location {
+                x: (self.x + img_width - 1) % img_width,
+                y: self.y,
+            },
+        ]
     }
 }
 
@@ -27,7 +49,7 @@ pub trait Fighter {
 pub struct Battle<T> {
     fighters: Vec<Vec<T>>,
     rng: rand::rngs::ThreadRng,
-    selection_algorithm: SelectionAlgorithm,
+    selection_callback: fn(&mut Self, Location, usize, usize) -> Location,
 }
 
 impl<T: Fighter> Battle<T> {
@@ -36,11 +58,22 @@ impl<T: Fighter> Battle<T> {
         img_width: usize,
         img_height: usize,
         selection_algorithm: SelectionAlgorithm,
+        filter_fight_candidates: bool,
     ) -> Self {
         let mut battle = Self {
             fighters: Vec::with_capacity(img_height),
             rng: rand::thread_rng(),
-            selection_algorithm,
+            selection_callback: if filter_fight_candidates {
+                match selection_algorithm {
+                    SelectionAlgorithm::WeakestNeighbour => Battle::weakest_neighbour_filtered,
+                    SelectionAlgorithm::RandomNeighbour => Battle::random_neighbour_filtered,
+                }
+            } else {
+                match selection_algorithm {
+                    SelectionAlgorithm::WeakestNeighbour => Battle::weakest_neighbour,
+                    SelectionAlgorithm::RandomNeighbour => Battle::random_neighbour,
+                }
+            },
         };
         for _ in 0..img_height {
             let row = (0..img_width)
@@ -95,10 +128,7 @@ impl<T: Fighter> Battle<T> {
                 x: current % img_width,
                 y: current / img_width,
             };
-            let defender_loc = match self.selection_algorithm {
-                SelectionAlgorithm::WeakestNeighbour => self.weakest_neighbour(attacker_loc),
-                SelectionAlgorithm::RandomNeighbour => self.random_neighbour(attacker_loc),
-            };
+            let defender_loc = (self.selection_callback)(self, attacker_loc, img_width, img_height);
 
             if self.fight(attacker_loc, defender_loc) {
                 death_count += 1;
@@ -127,82 +157,57 @@ impl<T: Fighter> Battle<T> {
         attacker.fight(defender)
     }
 
-    pub fn weakest_neighbour(&self, origin: Location) -> Location {
-        let img_width = self.fighters[0].len();
-        let img_height = self.fighters.len();
-        if origin.is_outside(img_width, img_height) {
-            return Location { x: 0, y: 0 };
-        }
-
+    fn weakest_neighbour(
+        &mut self,
+        origin: Location,
+        img_width: usize,
+        img_height: usize
+    ) -> Location {
         let fighter = &self.fighters[origin.y][origin.x];
 
-        let candidates = [
-            Location {
-                x: origin.x,
-                y: (origin.y + img_height - 1) % img_height,
-            },
-            Location {
-                x: (origin.x + 1) % img_width,
-                y: origin.y,
-            },
-            Location {
-                x: origin.x,
-                y: (origin.y + 1) % img_height,
-            },
-            Location {
-                x: (origin.x + img_width - 1) % img_width,
-                y: origin.y,
-            },
-        ];
-        *candidates
-            .iter()
-            .max_by_key(|candidate| {
-                let neighbour = &self.fighters[candidate.y][candidate.x];
-                if fighter.should_fight(neighbour) {
-                    fighter.get_effectiveness(neighbour)
-                } else {
-                    0
-                }
-            })
-            .unwrap()
+        *origin.neighbours(img_width, img_height).iter().max_by_key(|candidate| {
+            let neighbour = &self.fighters[candidate.y][candidate.x];
+            fighter.get_effectiveness(neighbour)
+        }).unwrap_or(&origin)
     }
 
-    pub fn random_neighbour(&mut self, origin: Location) -> Location {
-        let img_width = self.fighters[0].len();
-        let img_height = self.fighters.len();
-        if origin.is_outside(img_width, img_height) {
-            return Location { x: 0, y: 0 };
-        }
+    fn weakest_neighbour_filtered(
+        &mut self,
+        origin: Location,
+        img_width: usize,
+        img_height: usize
+    ) -> Location {
+        let fighter = &self.fighters[origin.y][origin.x];
 
-        let direction = self.rng.gen_range(0..4);
-        if direction == 0
-        // Go up
-        {
-            Location {
-                x: origin.x,
-                y: (origin.y + img_height - 1) % img_height,
-            }
-        } else if direction == 1
-        // Go right
-        {
-            Location {
-                x: (origin.x + 1) % img_width,
-                y: origin.y,
-            }
-        } else if direction == 2
-        // Go down
-        {
-            Location {
-                x: origin.x,
-                y: (origin.y + 1) % img_height,
-            }
-        } else
-        // Go left
-        {
-            Location {
-                x: (origin.x + img_width - 1) % img_width,
-                y: origin.y,
-            }
-        }
+        *origin.neighbours(img_width, img_height).iter().filter(|candidate| {
+            let neighbour = &self.fighters[candidate.y][candidate.x];
+            fighter.should_fight(neighbour)
+        }).max_by_key(|candidate| {
+            let neighbour = &self.fighters[candidate.y][candidate.x];
+            fighter.get_effectiveness(neighbour)
+        }).unwrap_or(&origin)
+    }
+
+    fn random_neighbour(
+        &mut self,
+        origin: Location,
+        img_width: usize,
+        img_height: usize
+    ) -> Location {
+        *origin.neighbours(img_width, img_height).iter().choose(&mut self.rng).unwrap_or(&origin)
+    }
+
+    fn random_neighbour_filtered(
+        &mut self,
+        origin: Location,
+        img_width: usize,
+        img_height: usize
+    ) -> Location {
+        let fighter = &self.fighters[origin.y][origin.x];
+
+        *origin.neighbours(img_width, img_height).iter().filter(|candidate| {
+            let neighbour = &self.fighters[candidate.y][candidate.x];
+            fighter.should_fight(neighbour)
+        }).choose(&mut self.rng).unwrap_or(&origin)
     }
 }
