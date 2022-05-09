@@ -86,7 +86,7 @@ fn get_effectiveness(attacker: usize, defender: usize) -> i32
     }
     else
     {
-        if defender_type == RPSType::Rock
+        if defender_type == RPSType::Paper
         {
             100
         }
