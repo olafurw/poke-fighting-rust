@@ -16,8 +16,6 @@ pub enum RPSType
     Scissor,
 }
 
-pub const RPS_COUNT: usize = RPSType::COUNT;
-
 impl RPSType
 {
     pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
@@ -132,7 +130,7 @@ impl RandomlyGeneratable for RPS
     fn generate_randomly() -> Box<dyn Iterator<Item=Self>>
     {
         let rng = rand::thread_rng();
-        Box::new(rng.sample_iter(Uniform::from(0..RPS_COUNT)).map(|t| Self::new(t.into())))
+        Box::new(rng.sample_iter(Uniform::from(0..RPSType::COUNT)).map(|t| Self::new(t.into())))
     }
 }
 
