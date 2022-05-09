@@ -67,7 +67,6 @@ struct Model
     measure_framerate: bool,
     measure_start: std::time::Instant,
     counter: usize,
-    paused: bool,
 }
 
 fn model(app: &App) -> Model
@@ -95,17 +94,11 @@ fn model(app: &App) -> Model
         measure_framerate: args.framerate,
         measure_start: std::time::Instant::now(),
         counter: 0,
-        paused: false,
     }
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update)
 {
-    if model.paused
-    {
-        return;
-    }
-
     model.battle.action();
 
     if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image
@@ -151,12 +144,19 @@ fn view(app: &App, model: &Model, frame: Frame)
     draw.to_frame(app, &frame).unwrap();
 }
 
-fn event(_app: &App, model: &mut Model, ev: nannou::event::WindowEvent)
+fn event(app: &App, model: &mut Model, ev: nannou::event::WindowEvent)
 {
     // todo turn into a match
     if let WindowEvent::KeyPressed(nannou::event::Key::Space) = &ev
     {
-        model.paused = !model.paused;
+        if let nannou::app::LoopMode::RefreshSync = app.loop_mode()
+        {
+            app.set_loop_mode(nannou::app::LoopMode::loop_ntimes(0));
+        }
+        else
+        {
+            app.set_loop_mode(nannou::app::LoopMode::refresh_sync());
+        }
     }
 
     if let WindowEvent::Resized(resized) = &ev
