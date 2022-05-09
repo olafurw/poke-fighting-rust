@@ -5,7 +5,9 @@ use nannou::image::GenericImageView;
 mod types;
 mod pokemon;
 mod battle;
+
 use battle::{Battle, SelectionAlgorithm};
+use pokemon::{Pokemon};
 
 /// Pokemon battle simulation
 #[derive(Parser, Debug)]
@@ -50,7 +52,7 @@ fn validate_size(arg: &str) -> Result<(), String>
 
 struct Model
 {
-    battle: Battle,
+    battle: Battle<Pokemon>,
     image: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
@@ -77,7 +79,7 @@ fn model(app: &App) -> Model
        .unwrap();
 
     Model {
-        battle: Battle::new(img_width, img_height, selection_algorithm),
+        battle: Battle::new(Pokemon::generate_randomly(), img_width, img_height, selection_algorithm),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
@@ -95,8 +97,8 @@ fn update(_app: &App, model: &mut Model, _update: Update)
     {
         for (x, y, pixel) in pixels.enumerate_pixels_mut()
         {
-            let pokemon = model.battle.pokemon(x, y);
-            *pixel = pokemon.kind.into();
+            let pokemon = model.battle.fighter(x, y);
+            *pixel = pokemon.color();
         }
     }
 
