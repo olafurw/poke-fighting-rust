@@ -29,13 +29,12 @@ pub enum PokemonType
 
 pub const POKEMON_COUNT: usize = PokemonType::COUNT;
 
-impl PokemonType
+impl From<usize> for PokemonType
 {
-	pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
-	{
-		let value = die.sample(rng);
-		PokemonType::from_repr(value).unwrap()
-	}
+    fn from(repr: usize) -> Self
+    {
+        Self::from_repr(repr).unwrap()
+    }
 }
 
 impl From<PokemonType> for usize

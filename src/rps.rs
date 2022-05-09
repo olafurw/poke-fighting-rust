@@ -1,6 +1,7 @@
 use nannou::image::Rgb;
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
+use rand::Rng;
 use strum::{FromRepr,EnumCount};
 
 
@@ -23,6 +24,14 @@ impl RPSType
     {
         let value = die.sample(rng);
         RPSType::from_repr(value).unwrap()
+    }
+}
+
+impl From<usize> for RPSType
+{
+    fn from(repr: usize) -> Self
+    {
+        Self::from_repr(repr).unwrap()
     }
 }
 
@@ -57,7 +66,7 @@ fn get_effectiveness(attacker: usize, defender: usize) -> i32
     {
         if defender_type == RPSType::Scissor
         {
-            1
+            100
         }
         else
         {
@@ -68,7 +77,7 @@ fn get_effectiveness(attacker: usize, defender: usize) -> i32
     {
         if defender_type == RPSType::Rock
         {
-            1
+            100
         }
         else
         {
@@ -79,7 +88,7 @@ fn get_effectiveness(attacker: usize, defender: usize) -> i32
     {
         if defender_type == RPSType::Rock
         {
-            1
+            100
         }
         else
         {
@@ -109,9 +118,8 @@ impl RPS
 
     pub fn generate_randomly() -> impl Iterator<Item = Self>
     {
-        let mut rng = rand::thread_rng();
-        let die = Uniform::from(0..RPS_COUNT);
-        (0..).map(move |_| Self::new(RPSType::random(&mut rng, &die)))
+        let rng = rand::thread_rng();
+        rng.sample_iter(Uniform::from(0..RPS_COUNT)).map(|t| Self::new(t.into()))
     }
 
     pub fn color(&self) -> nannou::image::Rgb<u8>

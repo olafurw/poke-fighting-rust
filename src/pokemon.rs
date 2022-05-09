@@ -1,4 +1,5 @@
 use rand::distributions::Uniform;
+use rand::Rng;
 
 use crate::types::{PokemonType, POKEMON_COUNT};
 use crate::battle::Fighter;
@@ -50,9 +51,8 @@ impl Pokemon
 
     pub fn generate_randomly() -> impl Iterator<Item = Self>
     {
-        let mut rng = rand::thread_rng();
-        let die = Uniform::from(0 .. POKEMON_COUNT);
-        (0..).map(move |_| Self::new(PokemonType::random(&mut rng, &die)))
+        let rng = rand::thread_rng();
+        rng.sample_iter(Uniform::from(0..POKEMON_COUNT)).map(|t| Self::new(t.into()))
     }
 
     pub fn color(&self) -> nannou::image::Rgb<u8>
