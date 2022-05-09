@@ -60,13 +60,14 @@ fn validate_size(arg: &str) -> Result<(), String>
 
 struct Model
 {
-    battle: Battle<RPS>,
+    battle: Battle<Pokemon>,
     image: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
     measure_framerate: bool,
     measure_start: std::time::Instant,
     counter: usize,
+    paused: bool,
 }
 
 fn model(app: &App) -> Model
@@ -87,18 +88,24 @@ fn model(app: &App) -> Model
        .unwrap();
 
     Model {
-        battle: Battle::new(RPS::generate_randomly(), img_width, img_height, selection_algorithm, !args.fightown),
+        battle: Battle::new(Pokemon::generate_randomly(), img_width, img_height, selection_algorithm, !args.fightown),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
         measure_framerate: args.framerate,
         measure_start: std::time::Instant::now(),
         counter: 0,
+        paused: false,
     }
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update)
 {
+    if model.paused
+    {
+        return;
+    }
+
     model.battle.action();
 
     if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image
@@ -146,6 +153,12 @@ fn view(app: &App, model: &Model, frame: Frame)
 
 fn event(_app: &App, model: &mut Model, ev: nannou::event::WindowEvent)
 {
+    // todo turn into a match
+    if let WindowEvent::KeyPressed(nannou::event::Key::Space) = &ev
+    {
+        model.paused = !model.paused;
+    }
+
     if let WindowEvent::Resized(resized) = &ev
     {
         model.window_width = resized.x as u32;
