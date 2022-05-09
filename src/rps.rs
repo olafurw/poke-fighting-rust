@@ -56,45 +56,15 @@ impl From<RPSType> for nannou::image::Rgb<u8>
     }
 }
 
+const EFFICIENCY: [[i32; RPSType::COUNT]; RPSType::COUNT] = [
+    [   0,   0, 100 ], // Rock
+    [ 100,   0,   0 ], // Paper
+    [   0, 100,   0 ], // Scissor
+];
+
 fn get_effectiveness(attacker: usize, defender: usize) -> i32
 {
-    let attacker_type = RPSType::from_repr(attacker).unwrap();
-    let defender_type = RPSType::from_repr(defender).unwrap();
-
-    // should be a table.
-    if attacker_type == RPSType::Rock
-    {
-        if defender_type == RPSType::Scissor
-        {
-            100
-        }
-        else
-        {
-            0
-        }
-    }
-    else if attacker_type == RPSType::Paper
-    {
-        if defender_type == RPSType::Rock
-        {
-            100
-        }
-        else
-        {
-            0
-        }
-    }
-    else
-    {
-        if defender_type == RPSType::Rock
-        {
-            100
-        }
-        else
-        {
-            0
-        }
-    }
+    EFFICIENCY[attacker][defender]
 }
 
 #[derive(Clone)]
