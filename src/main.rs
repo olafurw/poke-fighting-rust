@@ -9,15 +9,20 @@ mod pokemon;
 mod rps;
 mod battle;
 
-use battle::{Battle, SelectionAlgorithm};
+use battle::{Battle, Fighter, SelectionAlgorithm};
 use pokemon::{Pokemon};
 use rps::{RPS};
+use types::{FighterType, RandomlyGeneratable, Colored};
 
 /// Battle simulation
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args
 {
+    /// Fighter type, either pokemon or rps
+    #[clap(short='t', long, default_value_t = FighterType::Pokemon)]
+    fighter_type: FighterType,
+
     /// Image width
     #[clap(short='w', long, default_value_t = 512, validator = validate_size)]
     width: usize,
@@ -41,7 +46,12 @@ struct Args
 
 fn main()
 {
-    nannou::app(model).update(update).exit(exit).run();
+    let args = Args::parse();
+    match args.fighter_type
+    {
+        FighterType::Pokemon => nannou::app(model::<Pokemon>).update(update).exit(exit).run(),
+        FighterType::RPS => nannou::app(model::<RPS>).update(update).exit(exit).run(),
+    };
 }
 
 fn validate_size(arg: &str) -> Result<(), String>
@@ -58,9 +68,9 @@ fn validate_size(arg: &str) -> Result<(), String>
     Ok(())
 }
 
-struct Model
+struct Model<T>
 {
-    battle: Battle<Pokemon>,
+    battle: Battle<T>,
     image: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
@@ -69,7 +79,7 @@ struct Model
     counter: usize,
 }
 
-fn model(app: &App) -> Model
+fn model<T: 'static + Fighter + RandomlyGeneratable>(app: &App) -> Model<T>
 {
     let args = Args::parse();
     let img_width = args.width;
@@ -81,13 +91,13 @@ fn model(app: &App) -> Model
        .size(img_width as u32, img_height as u32)
        .surface_conf_builder(surface_conf_builder)
        .clear_color(nannou::color::PURPLE)
-       .view(view)
-       .event(event)
+       .view(view::<T>)
+       .event(event::<T>)
        .build()
        .unwrap();
 
     Model {
-        battle: Battle::new(Pokemon::generate_randomly(), img_width, img_height, selection_algorithm, !args.fightown),
+        battle: Battle::new(T::generate_randomly(), img_width, img_height, selection_algorithm, !args.fightown),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
@@ -97,7 +107,7 @@ fn model(app: &App) -> Model
     }
 }
 
-fn update(_app: &App, model: &mut Model, _update: Update)
+fn update<T: Fighter + Colored>(_app: &App, model: &mut Model<T>, _update: Update)
 {
     model.battle.action();
 
@@ -124,7 +134,7 @@ fn update(_app: &App, model: &mut Model, _update: Update)
     }
 }
 
-fn view(app: &App, model: &Model, frame: Frame)
+fn view<T>(app: &App, model: &Model<T>, frame: Frame)
 {
     let texture = nannou::wgpu::Texture::from_image(app, &model.image);
     let (image_width, image_height) = model.image.dimensions();
@@ -144,7 +154,7 @@ fn view(app: &App, model: &Model, frame: Frame)
     draw.to_frame(app, &frame).unwrap();
 }
 
-fn event(app: &App, model: &mut Model, ev: nannou::event::WindowEvent)
+fn event<T>(app: &App, model: &mut Model<T>, ev: nannou::event::WindowEvent)
 {
     // todo turn into a match
     if let WindowEvent::KeyPressed(nannou::event::Key::Space) = &ev
@@ -167,7 +177,7 @@ fn event(app: &App, model: &mut Model, ev: nannou::event::WindowEvent)
 }
 
 
-fn exit(_app: &App, _model: Model)
+fn exit<T>(_app: &App, _model: Model<T>)
 {
 
 }

@@ -1,7 +1,50 @@
-use nannou::image::Rgb;
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
 use strum::{FromRepr,EnumCount};
+
+#[derive(Debug)]
+pub enum FighterType
+{
+    Pokemon,
+    RPS,
+}
+
+impl std::str::FromStr for FighterType
+{
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err>
+    {
+        match s.trim()
+        {
+            "pokemon" => Ok(FighterType::Pokemon),
+            "rps" => Ok(FighterType::RPS),
+            _ => Err("Unknown fighter type".to_string())
+        }
+    }
+}
+
+impl std::fmt::Display for FighterType
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
+    {
+        write!(f, "{}", match self
+        {
+            FighterType::Pokemon => "pokemon",
+            FighterType::RPS => "rps",
+        })
+    }
+}
+
+pub trait RandomlyGeneratable
+{
+    fn generate_randomly() -> Box<dyn Iterator<Item=Self>>;
+}
+
+pub trait Colored
+{
+    fn color(&self) -> nannou::image::Rgb<u8>;
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
@@ -45,7 +88,7 @@ impl From<PokemonType> for usize
     }
 }
 
-impl From<PokemonType> for Rgb<u8>
+impl From<PokemonType> for nannou::image::Rgb<u8>
 {
 	fn from(kind: PokemonType) -> Self
 	{
