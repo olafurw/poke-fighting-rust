@@ -1,8 +1,8 @@
-use nannou::image::Rgb;
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
 use rand::Rng;
 use strum::{FromRepr,EnumCount};
+use crate::types::{RandomlyGeneratable, Colored};
 
 
 use crate::battle::Fighter;
@@ -43,7 +43,7 @@ impl From<RPSType> for usize
     }
 }
 
-impl From<RPSType> for Rgb<u8>
+impl From<RPSType> for nannou::image::Rgb<u8>
 {
     fn from(kind: RPSType) -> Self
     {
@@ -116,17 +116,6 @@ impl RPS
         }
     }
 
-    pub fn generate_randomly() -> impl Iterator<Item = Self>
-    {
-        let rng = rand::thread_rng();
-        rng.sample_iter(Uniform::from(0..RPS_COUNT)).map(|t| Self::new(t.into()))
-    }
-
-    pub fn color(&self) -> nannou::image::Rgb<u8>
-    {
-        self.kind.into()
-    }
-
     fn reset(&mut self, kind: RPSType)
     {
         self.health = 1;
@@ -165,6 +154,23 @@ impl Fighter for RPS
             defender.reset(self.kind);
         }
         is_dead
+    }
+}
+
+impl RandomlyGeneratable for RPS
+{
+    fn generate_randomly() -> Box<dyn Iterator<Item=Self>>
+    {
+        let rng = rand::thread_rng();
+        Box::new(rng.sample_iter(Uniform::from(0..RPS_COUNT)).map(|t| Self::new(t.into())))
+    }
+}
+
+impl Colored for RPS
+{
+    fn color(&self) -> nannou::image::Rgb<u8>
+    {
+        self.kind.into()
     }
 }
 

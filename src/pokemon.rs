@@ -1,7 +1,7 @@
 use rand::distributions::Uniform;
 use rand::Rng;
 
-use crate::types::{PokemonType, POKEMON_COUNT};
+use crate::types::{PokemonType, POKEMON_COUNT, RandomlyGeneratable, Colored};
 use crate::battle::Fighter;
 
 pub const POKEMON: [[i32; POKEMON_COUNT]; POKEMON_COUNT] = [
@@ -49,17 +49,6 @@ impl Pokemon
         }
     }
 
-    pub fn generate_randomly() -> impl Iterator<Item = Self>
-    {
-        let rng = rand::thread_rng();
-        rng.sample_iter(Uniform::from(0..POKEMON_COUNT)).map(|t| Self::new(t.into()))
-    }
-
-    pub fn color(&self) -> nannou::image::Rgb<u8>
-    {
-        self.kind.into()
-    }
-
     fn reset(&mut self, kind: PokemonType)
     {
         self.health = 80;
@@ -98,6 +87,23 @@ impl Fighter for Pokemon
             defender.reset(self.kind);
         }
         is_dead
+    }
+}
+
+impl RandomlyGeneratable for Pokemon
+{
+    fn generate_randomly() -> Box<dyn Iterator<Item=Self>>
+    {
+        let rng = rand::thread_rng();
+        Box::new(rng.sample_iter(Uniform::from(0..POKEMON_COUNT)).map(|t| Self::new(t.into())))
+    }
+}
+
+impl Colored for Pokemon
+{
+    fn color(&self) -> nannou::image::Rgb<u8>
+    {
+        self.kind.into()
     }
 }
 
