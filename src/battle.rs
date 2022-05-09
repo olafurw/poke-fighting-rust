@@ -1,8 +1,4 @@
-use rand::distributions::Uniform;
 use rand::Rng;
-
-use crate::pokemon::{Pokemon, get_effectiveness_with_type};
-use crate::types::POKEMON_COUNT;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Location
@@ -26,32 +22,67 @@ pub enum SelectionAlgorithm
     RandomNeighbour,
 }
 
-pub struct Battle
+pub trait Fighter
 {
-    pokemons: Vec<Vec<Pokemon>>,
+    fn should_fight(&self, defender: &Self) -> bool;
+    fn get_effectiveness(&self, defender: &Self) -> i32;
+    fn fight(&self, defender: &mut Self) -> bool;
+}
+
+pub struct Battle<T>
+{
+    fighters: Vec<Vec<T>>,
     rng: rand::rngs::ThreadRng,
     selection_algorithm: SelectionAlgorithm,
 }
 
-impl Battle
+impl<T: Fighter> Battle<T>
 {
-    pub fn new(img_width: usize, img_height: usize, selection_algorithm: SelectionAlgorithm) -> Self
+    pub fn new(mut fighter_source: impl Iterator<Item = T>, img_width: usize, img_height: usize, selection_algorithm: SelectionAlgorithm) -> Self
     {
-        let die = Uniform::from(0 .. POKEMON_COUNT);
-
-        let mut battle = Battle { pokemons: Vec::with_capacity(img_height), rng: rand::thread_rng(), selection_algorithm };
+        let mut battle = Self { fighters: Vec::with_capacity(img_height), rng: rand::thread_rng(), selection_algorithm };
         for _ in 0 .. img_height
         {
-            let row = (0 .. img_width).map(|_| Pokemon::random(&mut battle.rng, &die)).collect();
-            battle.pokemons.push(row);
+            let row = (0 .. img_width).map(|_| fighter_source.next().unwrap()).collect();
+            battle.fighters.push(row);
         }
 
         battle
     }
 
-    pub fn pokemon(&self, x: u32, y: u32) -> &Pokemon
+    pub fn fighter(&self, x: u32, y: u32) -> &T
     {
-        &self.pokemons[y as usize][x as usize]
+        &self.fighters[y as usize][x as usize]
+    }
+
+    fn fighters(&mut self, loc1: Location, loc2: Location) -> (&mut T, &mut T)
+    {
+        // Best way to get two mutable references to one array seems to be split_at_mut().
+        // It's rather awkward for a two-dimensional array however.
+        if loc1.y == loc2.y
+        {
+            let (slice1, slice2) = self.fighters[loc1.y].split_at_mut(std::cmp::max(loc1.x, loc2.x));
+            if loc1.x < loc2.x
+            {
+                (&mut slice1[loc1.x], &mut slice2[0])
+            }
+            else
+            {
+                (&mut slice2[0], &mut slice1[loc2.x])
+            }
+        }
+        else
+        {
+            let (slice1, slice2) = self.fighters.split_at_mut(std::cmp::max(loc1.y, loc2.y));
+            if loc1.y < loc2.y
+            {
+                (&mut slice1[loc1.y][loc1.x], &mut slice2[0][loc2.x])
+            }
+            else
+            {
+                (&mut slice2[0][loc1.x], &mut slice1[loc2.y][loc2.x])
+            }
+        }
     }
 
     pub fn action(&mut self) -> u32
@@ -59,8 +90,8 @@ impl Battle
         // We use prime numbers as offsets to loop through the entries in a semi-random fashion.
         // These particular prime numbers have been chosen by a fair dice roll.
         const PRIMES: &[usize] = &[48817, 58099, 89867, 105407, 126943, 200723, 221021, 231677];
-        let img_width = self.pokemons[0].len();
-        let img_height = self.pokemons.len();
+        let img_width = self.fighters[0].len();
+        let img_height = self.fighters.len();
         let num_entries = img_width * img_height;
 
         let mut death_count = 0;
@@ -94,42 +125,27 @@ impl Battle
 
     pub fn fight(&mut self, attacker_loc: Location, defender_loc: Location) -> bool
     {
-        let img_width = self.pokemons[0].len();
-        let img_height = self.pokemons.len();
+        let img_width = self.fighters[0].len();
+        let img_height = self.fighters.len();
         if attacker_loc == defender_loc || attacker_loc.is_outside(img_width, img_height) || defender_loc.is_outside(img_width, img_height)
         {
             return false;
         }
 
-        let attacker_kind = self.pokemons[attacker_loc.y][attacker_loc.x].kind;
-        let attacker_damage = self.pokemons[attacker_loc.y][attacker_loc.x].damage;
-        let defender = &mut self.pokemons[defender_loc.y][defender_loc.x];
-
-        let effectiveness = get_effectiveness_with_type(attacker_kind, defender.kind);
-        let damage = attacker_damage * effectiveness / 100;
-
-        let is_dead = defender.take_damage(damage);
-        if is_dead
-        {
-            defender.reset(attacker_kind);
-            true
-        }
-        else
-        {
-            false
-        }
+        let (attacker, defender) = self.fighters(attacker_loc, defender_loc);
+        attacker.fight(defender)
     }
 
     pub fn weakest_neighbour(&self, origin: Location) -> Location
     {
-        let img_width = self.pokemons[0].len();
-        let img_height = self.pokemons.len();
+        let img_width = self.fighters[0].len();
+        let img_height = self.fighters.len();
         if origin.is_outside(img_width, img_height)
         {
             return Location { x: 0, y: 0 };
         }
 
-        let pokemon = &self.pokemons[origin.y][origin.x];
+        let fighter = &self.fighters[origin.y][origin.x];
 
         let candidates = [
             Location { x: origin.x, y: (origin.y + img_height - 1) % img_height },
@@ -139,10 +155,10 @@ impl Battle
         ];
         *candidates.iter().max_by_key(|candidate|
         {
-            let neighbour = &self.pokemons[candidate.y][candidate.x];
-            if pokemon.kind != neighbour.kind
+            let neighbour = &self.fighters[candidate.y][candidate.x];
+            if fighter.should_fight(neighbour)
             {
-                get_effectiveness_with_type(pokemon.kind, neighbour.kind)
+                fighter.get_effectiveness(neighbour)
             }
             else
             {
@@ -153,8 +169,8 @@ impl Battle
 
     pub fn random_neighbour(&mut self, origin: Location) -> Location
     {
-        let img_width = self.pokemons[0].len();
-        let img_height = self.pokemons.len();
+        let img_width = self.fighters[0].len();
+        let img_height = self.fighters.len();
         if origin.is_outside(img_width, img_height)
         {
             return Location { x: 0, y: 0 };
