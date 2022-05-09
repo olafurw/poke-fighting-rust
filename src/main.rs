@@ -33,6 +33,10 @@ struct Args
     /// Measure frame rate and print it to stdout
     #[clap(short='f', long)]
     framerate: bool,
+
+    /// Let fighters fight their own kind
+    #[clap(short='o', long)]
+    fightown: bool,
 }
 
 fn main()
@@ -83,7 +87,7 @@ fn model(app: &App) -> Model
        .unwrap();
 
     Model {
-        battle: Battle::new(RPS::generate_randomly(), img_width, img_height, selection_algorithm),
+        battle: Battle::new(RPS::generate_randomly(), img_width, img_height, selection_algorithm, !args.fightown),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
