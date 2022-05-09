@@ -1,15 +1,19 @@
+#![allow(unused_imports, dead_code)]
+
 use clap::Parser;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use nannou::image::GenericImageView;
 
 mod types;
 mod pokemon;
+mod rps;
 mod battle;
 
 use battle::{Battle, SelectionAlgorithm};
 use pokemon::{Pokemon};
+use rps::{RPS};
 
-/// Pokemon battle simulation
+/// Battle simulation
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args
@@ -52,7 +56,7 @@ fn validate_size(arg: &str) -> Result<(), String>
 
 struct Model
 {
-    battle: Battle<Pokemon>,
+    battle: Battle<RPS>,
     image: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
@@ -79,7 +83,7 @@ fn model(app: &App) -> Model
        .unwrap();
 
     Model {
-        battle: Battle::new(Pokemon::generate_randomly(), img_width, img_height, selection_algorithm),
+        battle: Battle::new(RPS::generate_randomly(), img_width, img_height, selection_algorithm),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(img_width as u32, img_height as u32)),
         window_width: img_width as u32,
         window_height: img_height as u32,
@@ -97,8 +101,8 @@ fn update(_app: &App, model: &mut Model, _update: Update)
     {
         for (x, y, pixel) in pixels.enumerate_pixels_mut()
         {
-            let pokemon = model.battle.fighter(x, y);
-            *pixel = pokemon.color();
+            let fighter = model.battle.fighter(x, y);
+            *pixel = fighter.color();
         }
     }
 
