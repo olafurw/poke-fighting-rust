@@ -48,9 +48,9 @@ impl From<RPSType> for nannou::image::Rgb<u8>
     fn from(kind: RPSType) -> Self
     {
         match kind {
-            RPSType::Rock => [168, 168, 120],
-            RPSType::Paper => [240, 128, 48],
-            RPSType::Scissor => [104, 144, 240],
+            RPSType::Rock => [128, 0, 0],
+            RPSType::Paper => [0, 0, 128],
+            RPSType::Scissor => [0, 128, 0],
         }
         .into()
     }
