@@ -4,7 +4,7 @@ use rand::Rng;
 use crate::types::{PokemonType, POKEMON_COUNT};
 use crate::battle::Fighter;
 
-pub const POKEMON: [[i32; POKEMON_COUNT]; POKEMON_COUNT] = [
+const EFFICIENCY: [[i32; POKEMON_COUNT]; POKEMON_COUNT] = [
 	[ 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,  50,   0, 100, 100,  50, 100 ], // Normal
 	[ 100,  50,  50, 100, 200, 200, 100, 100, 100, 100, 100, 200,  50, 100,  50, 100, 200, 100 ], // Fire
 	[ 100, 200,  50, 100,  50, 100, 100, 100, 200, 100, 100, 100, 200, 100,  50, 100, 100, 100 ], // Water
@@ -27,7 +27,7 @@ pub const POKEMON: [[i32; POKEMON_COUNT]; POKEMON_COUNT] = [
 
 fn get_effectiveness(attacker: usize, defender: usize) -> i32
 {
-    POKEMON[attacker][defender]
+    EFFICIENCY[attacker][defender]
 }
 
 #[derive(Clone)]
