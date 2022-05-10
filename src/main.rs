@@ -1,7 +1,7 @@
-use clap::Parser;
+use clap::{ArgEnum, Parser};
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use nannou::image::GenericImageView;
-use poke_fighting_rust::{Battle, Colored, Fighter, FighterType, Pokemon, RandomlyGeneratable, RPS, StreetFighter, SelectionAlgorithm};
+use poke_fighting_rust::{Battle, Colored, Fighter, Pokemon, RandomlyGeneratable, RPS, StreetFighter, SelectionAlgorithm};
 
 /// Battle simulation
 #[derive(Parser, Debug)]
@@ -9,7 +9,7 @@ use poke_fighting_rust::{Battle, Colored, Fighter, FighterType, Pokemon, Randoml
 struct Args
 {
     /// Fighter type, either pokemon or rps
-    #[clap(short='t', long, default_value_t = FighterType::StreetFighter)]
+    #[clap(arg_enum, short='t', long, default_value_t = FighterType::StreetFighter)]
     fighter_type: FighterType,
 
     /// Image width
@@ -31,6 +31,14 @@ struct Args
     /// Let fighters fight their own kind
     #[clap(short='o', long)]
     fightown: bool,
+}
+
+#[derive(ArgEnum, Clone, Debug)]
+enum FighterType
+{
+    Pokemon,
+    RPS,
+    StreetFighter,
 }
 
 fn main()
