@@ -3,18 +3,16 @@
 // Why that one? Only page I found with a table I could copy paste, all newer rankings are images
 // And OCR does not handle them well.
 
+use crate::battle::Fighter;
+use crate::types::{Colored, RandomlyGeneratable};
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
 use rand::Rng;
-use strum::{FromRepr,EnumCount};
-use crate::types::{RandomlyGeneratable, Colored};
-
-use crate::battle::Fighter;
+use strum::{EnumCount, FromRepr};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
-pub enum StreetFighterType
-{
+pub enum StreetFighterType {
     Seth,
     CViper,
     Cammy,
@@ -56,35 +54,27 @@ pub enum StreetFighterType
     Dan,
 }
 
-impl StreetFighterType
-{
-    pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
-    {
+impl StreetFighterType {
+    pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self {
         let value = die.sample(rng);
         StreetFighterType::from_repr(value).unwrap()
     }
 }
 
-impl From<usize> for StreetFighterType
-{
-    fn from(repr: usize) -> Self
-    {
+impl From<usize> for StreetFighterType {
+    fn from(repr: usize) -> Self {
         Self::from_repr(repr).unwrap()
     }
 }
 
-impl From<StreetFighterType> for usize
-{
-    fn from(kind: StreetFighterType) -> Self
-    {
+impl From<StreetFighterType> for usize {
+    fn from(kind: StreetFighterType) -> Self {
         kind as Self
     }
 }
 
-impl From<StreetFighterType> for nannou::image::Rgb<u8>
-{
-    fn from(kind: StreetFighterType) -> Self
-    {
+impl From<StreetFighterType> for nannou::image::Rgb<u8> {
+    fn from(kind: StreetFighterType) -> Self {
         match kind {
             StreetFighterType::Seth => [100, 122, 4],
             StreetFighterType::CViper => [105, 78, 203], // blue
@@ -130,6 +120,7 @@ impl From<StreetFighterType> for nannou::image::Rgb<u8>
     }
 }
 
+#[rustfmt::skip]
 const EFFICIENCY: [[i32; StreetFighterType::COUNT]; StreetFighterType::COUNT] = [
     [ 0, 40, 40, 50, 40, 50, 50, 50, 40, 50, 50, 50, 50, 60, 60, 50, 60, 70, 60, 60, 40, 60, 50, 60, 60, 60, 40, 60, 50, 60, 60, 50, 60, 60, 60, 50, 60, 70, 70],
     [60,  0, 60, 60, 50, 50, 60, 40, 50, 40, 60, 50, 60, 40, 60, 60, 50, 40, 70, 60, 50, 60, 50, 40, 60, 60, 50, 60, 50, 50, 50, 60, 50, 50, 60, 60, 50, 60, 60],
@@ -172,24 +163,20 @@ const EFFICIENCY: [[i32; StreetFighterType::COUNT]; StreetFighterType::COUNT] = 
     [30, 40, 40, 40, 40, 30, 40, 40, 40, 40, 50, 40, 30, 40, 30, 40, 40, 30, 30, 40, 40, 40, 40, 40, 40, 40, 40, 40, 50, 40, 40, 40, 40, 40, 40, 40, 40, 40,  0],
 ];
 
-fn get_effectiveness(attacker: usize, defender: usize) -> i32
-{
+fn get_effectiveness(attacker: usize, defender: usize) -> i32 {
     EFFICIENCY[attacker][defender]
 }
 
 #[derive(Clone)]
-pub struct StreetFighter
-{
+pub struct StreetFighter {
     health: i32,
     damage: i32,
     kind: StreetFighterType,
     rng: rand::rngs::ThreadRng,
 }
 
-impl StreetFighter
-{
-    pub fn new(kind: StreetFighterType) -> Self
-    {
+impl StreetFighter {
+    pub fn new(kind: StreetFighterType) -> Self {
         StreetFighter {
             health: 100,
             damage: 100,
@@ -198,58 +185,49 @@ impl StreetFighter
         }
     }
 
-    fn reset(&mut self, kind: StreetFighterType)
-    {
+    fn reset(&mut self, kind: StreetFighterType) {
         self.health = 100;
         self.damage = 100;
         self.kind = kind;
     }
 }
 
-impl Fighter for StreetFighter
-{
-    fn should_fight(&self, defender: &Self) -> bool
-    {
+impl Fighter for StreetFighter {
+    fn should_fight(&self, defender: &Self) -> bool {
         self.kind != defender.kind
     }
 
-    fn get_effectiveness(&self, defender: &Self) -> i32
-    {
+    fn get_effectiveness(&self, defender: &Self) -> i32 {
         get_effectiveness(self.kind.into(), defender.kind.into())
     }
 
-    fn fight(&self, defender: &mut Self) -> bool
-    {
+    fn fight(&self, defender: &mut Self) -> bool {
         // street fighter table is based on chance to win, not damage done
         // so we need to roll a die based on the chance
         // we use defender's rng because they're &mut Self
         let roll = defender.rng.gen_range(0..=100);
         let effectiveness = self.get_effectiveness(defender);
-        if roll < effectiveness
-        {
+        if roll < effectiveness {
             defender.reset(self.kind);
             true
-        }
-        else 
-        {
+        } else {
             false
         }
     }
 }
 
-impl RandomlyGeneratable for StreetFighter
-{
-    fn generate_randomly() -> Box<dyn Iterator<Item=Self>>
-    {
+impl RandomlyGeneratable for StreetFighter {
+    fn generate_randomly() -> Box<dyn Iterator<Item = Self>> {
         let rng = rand::thread_rng();
-        Box::new(rng.sample_iter(Uniform::from(0..StreetFighterType::COUNT)).map(|t| Self::new(t.into())))
+        Box::new(
+            rng.sample_iter(Uniform::from(0..StreetFighterType::COUNT))
+                .map(|t| Self::new(t.into())),
+        )
     }
 }
 
-impl Colored for StreetFighter
-{
-    fn color(&self) -> nannou::image::Rgb<u8>
-    {
+impl Colored for StreetFighter {
+    fn color(&self) -> nannou::image::Rgb<u8> {
         self.kind.into()
     }
 }
@@ -260,25 +238,14 @@ mod tests {
     // todo, tests
 
     #[test]
-    fn test_get_effectiveness()
-    {
-        
-    }
+    fn test_get_effectiveness() {}
 
     #[test]
-    fn test_get_color()
-    {
-    }
+    fn test_get_color() {}
 
     #[test]
-    fn test_damage()
-    {
-        
-    }
+    fn test_damage() {}
 
     #[test]
-    fn test_reset()
-    {
-        
-    }
+    fn test_reset() {}
 }

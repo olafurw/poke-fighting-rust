@@ -48,3 +48,7 @@ jobs:
         path: target/release/${{ matrix.target_name }}
     - name: Run tests
       run: cargo test --verbose
+    - name: Check format
+      run: cargo fmt -- --check
+    - name: Clippy checks
+      run: cargo clippy -- -D warnings

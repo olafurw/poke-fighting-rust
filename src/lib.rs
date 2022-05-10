@@ -1,11 +1,11 @@
-mod types;
-mod pokemon;
 mod battle;
+mod pokemon;
 mod rps;
 mod street_fighter;
+mod types;
 
 pub use battle::{Battle, Fighter, SelectionAlgorithm};
 pub use pokemon::Pokemon;
 pub use rps::RPS;
 pub use street_fighter::StreetFighter;
-pub use types::{RandomlyGeneratable, Colored};
+pub use types::{Colored, RandomlyGeneratable};

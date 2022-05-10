@@ -1,5 +1,5 @@
-use rand::Rng;
 use rand::seq::IteratorRandom;
+use rand::Rng;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Location {
@@ -161,53 +161,71 @@ impl<T: Fighter> Battle<T> {
         &mut self,
         origin: Location,
         img_width: usize,
-        img_height: usize
+        img_height: usize,
     ) -> Location {
         let fighter = &self.fighters[origin.y][origin.x];
 
-        *origin.neighbours(img_width, img_height).iter().max_by_key(|candidate| {
-            let neighbour = &self.fighters[candidate.y][candidate.x];
-            fighter.get_effectiveness(neighbour)
-        }).unwrap_or(&origin)
+        *origin
+            .neighbours(img_width, img_height)
+            .iter()
+            .max_by_key(|candidate| {
+                let neighbour = &self.fighters[candidate.y][candidate.x];
+                fighter.get_effectiveness(neighbour)
+            })
+            .unwrap_or(&origin)
     }
 
     fn weakest_neighbour_filtered(
         &mut self,
         origin: Location,
         img_width: usize,
-        img_height: usize
+        img_height: usize,
     ) -> Location {
         let fighter = &self.fighters[origin.y][origin.x];
 
-        *origin.neighbours(img_width, img_height).iter().filter(|candidate| {
-            let neighbour = &self.fighters[candidate.y][candidate.x];
-            fighter.should_fight(neighbour)
-        }).max_by_key(|candidate| {
-            let neighbour = &self.fighters[candidate.y][candidate.x];
-            fighter.get_effectiveness(neighbour)
-        }).unwrap_or(&origin)
+        *origin
+            .neighbours(img_width, img_height)
+            .iter()
+            .filter(|candidate| {
+                let neighbour = &self.fighters[candidate.y][candidate.x];
+                fighter.should_fight(neighbour)
+            })
+            .max_by_key(|candidate| {
+                let neighbour = &self.fighters[candidate.y][candidate.x];
+                fighter.get_effectiveness(neighbour)
+            })
+            .unwrap_or(&origin)
     }
 
     fn random_neighbour(
         &mut self,
         origin: Location,
         img_width: usize,
-        img_height: usize
+        img_height: usize,
     ) -> Location {
-        *origin.neighbours(img_width, img_height).iter().choose(&mut self.rng).unwrap_or(&origin)
+        *origin
+            .neighbours(img_width, img_height)
+            .iter()
+            .choose(&mut self.rng)
+            .unwrap_or(&origin)
     }
 
     fn random_neighbour_filtered(
         &mut self,
         origin: Location,
         img_width: usize,
-        img_height: usize
+        img_height: usize,
     ) -> Location {
         let fighter = &self.fighters[origin.y][origin.x];
 
-        *origin.neighbours(img_width, img_height).iter().filter(|candidate| {
-            let neighbour = &self.fighters[candidate.y][candidate.x];
-            fighter.should_fight(neighbour)
-        }).choose(&mut self.rng).unwrap_or(&origin)
+        *origin
+            .neighbours(img_width, img_height)
+            .iter()
+            .filter(|candidate| {
+                let neighbour = &self.fighters[candidate.y][candidate.x];
+                fighter.should_fight(neighbour)
+            })
+            .choose(&mut self.rng)
+            .unwrap_or(&origin)
     }
 }

@@ -1,49 +1,39 @@
+use crate::battle::Fighter;
+use crate::types::{Colored, RandomlyGeneratable};
 use rand::distributions::{Distribution, Uniform};
 use rand::prelude::ThreadRng;
 use rand::Rng;
-use strum::{FromRepr,EnumCount};
-use crate::types::{RandomlyGeneratable, Colored};
-
-use crate::battle::Fighter;
+use strum::{EnumCount, FromRepr};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
-pub enum RPSType
-{
+pub enum RPSType {
     Rock,
     Paper,
     Scissor,
 }
 
-impl RPSType
-{
-    pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self
-    {
+impl RPSType {
+    pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self {
         let value = die.sample(rng);
         RPSType::from_repr(value).unwrap()
     }
 }
 
-impl From<usize> for RPSType
-{
-    fn from(repr: usize) -> Self
-    {
+impl From<usize> for RPSType {
+    fn from(repr: usize) -> Self {
         Self::from_repr(repr).unwrap()
     }
 }
 
-impl From<RPSType> for usize
-{
-    fn from(kind: RPSType) -> Self
-    {
+impl From<RPSType> for usize {
+    fn from(kind: RPSType) -> Self {
         kind as Self
     }
 }
 
-impl From<RPSType> for nannou::image::Rgb<u8>
-{
-    fn from(kind: RPSType) -> Self
-    {
+impl From<RPSType> for nannou::image::Rgb<u8> {
+    fn from(kind: RPSType) -> Self {
         match kind {
             RPSType::Rock => [128, 0, 0],
             RPSType::Paper => [0, 0, 128],
@@ -53,29 +43,26 @@ impl From<RPSType> for nannou::image::Rgb<u8>
     }
 }
 
+#[rustfmt::skip]
 const EFFICIENCY: [[i32; RPSType::COUNT]; RPSType::COUNT] = [
     [   0,   0, 100 ], // Rock
     [ 100,   0,   0 ], // Paper
     [   0, 100,   0 ], // Scissor
 ];
 
-fn get_effectiveness(attacker: usize, defender: usize) -> i32
-{
+fn get_effectiveness(attacker: usize, defender: usize) -> i32 {
     EFFICIENCY[attacker][defender]
 }
 
 #[derive(Clone)]
-pub struct RPS
-{
+pub struct RPS {
     health: i32,
     damage: i32,
     kind: RPSType,
 }
 
-impl RPS
-{
-    pub fn new(kind: RPSType) -> Self
-    {
+impl RPS {
+    pub fn new(kind: RPSType) -> Self {
         RPS {
             health: 100,
             damage: 100,
@@ -83,60 +70,52 @@ impl RPS
         }
     }
 
-    fn reset(&mut self, kind: RPSType)
-    {
+    fn reset(&mut self, kind: RPSType) {
         self.health = 100;
         self.damage = 100;
         self.kind = kind;
     }
 
-    fn take_damage(&mut self, damage: i32) -> bool
-    {
+    fn take_damage(&mut self, damage: i32) -> bool {
         self.health -= damage;
 
         self.health <= 0
     }
 }
 
-impl Fighter for RPS
-{
-    fn should_fight(&self, defender: &Self) -> bool
-    {
+impl Fighter for RPS {
+    fn should_fight(&self, defender: &Self) -> bool {
         self.kind != defender.kind
     }
 
-    fn get_effectiveness(&self, defender: &Self) -> i32
-    {
+    fn get_effectiveness(&self, defender: &Self) -> i32 {
         get_effectiveness(self.kind.into(), defender.kind.into())
     }
 
-    fn fight(&self, defender: &mut Self) -> bool
-    {
+    fn fight(&self, defender: &mut Self) -> bool {
         let effectiveness = self.get_effectiveness(defender);
         let damage = self.damage * effectiveness / 100;
 
         let is_dead = defender.take_damage(damage);
-        if is_dead
-        {
+        if is_dead {
             defender.reset(self.kind);
         }
         is_dead
     }
 }
 
-impl RandomlyGeneratable for RPS
-{
-    fn generate_randomly() -> Box<dyn Iterator<Item=Self>>
-    {
+impl RandomlyGeneratable for RPS {
+    fn generate_randomly() -> Box<dyn Iterator<Item = Self>> {
         let rng = rand::thread_rng();
-        Box::new(rng.sample_iter(Uniform::from(0..RPSType::COUNT)).map(|t| Self::new(t.into())))
+        Box::new(
+            rng.sample_iter(Uniform::from(0..RPSType::COUNT))
+                .map(|t| Self::new(t.into())),
+        )
     }
 }
 
-impl Colored for RPS
-{
-    fn color(&self) -> nannou::image::Rgb<u8>
-    {
+impl Colored for RPS {
+    fn color(&self) -> nannou::image::Rgb<u8> {
         self.kind.into()
     }
 }
@@ -146,32 +125,65 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_effectiveness()
-    {
-        assert_eq!(RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Scissor)), 100);
-        assert_eq!(RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Rock)), 100);
-        assert_eq!(RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Paper)), 100);
+    fn test_get_effectiveness() {
+        assert_eq!(
+            RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Scissor)),
+            100
+        );
+        assert_eq!(
+            RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Rock)),
+            100
+        );
+        assert_eq!(
+            RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Paper)),
+            100
+        );
 
-        assert_eq!(RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Rock)), 0);
-        assert_eq!(RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Paper)), 0);
-        assert_eq!(RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Scissor)), 0);
+        assert_eq!(
+            RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Rock)),
+            0
+        );
+        assert_eq!(
+            RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Paper)),
+            0
+        );
+        assert_eq!(
+            RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Scissor)),
+            0
+        );
 
-        assert_eq!(RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Scissor)), 0);
-        assert_eq!(RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Rock)), 0);
-        assert_eq!(RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Paper)), 0);
+        assert_eq!(
+            RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Scissor)),
+            0
+        );
+        assert_eq!(
+            RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Rock)),
+            0
+        );
+        assert_eq!(
+            RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Paper)),
+            0
+        );
     }
 
     #[test]
-    fn test_get_color()
-    {
-        assert_eq!(RPS::new(RPSType::Rock).color(), nannou::image::Rgb([128,0,0]));
-        assert_eq!(RPS::new(RPSType::Paper).color(), nannou::image::Rgb([0,0,128]));
-        assert_eq!(RPS::new(RPSType::Scissor).color(), nannou::image::Rgb([0,128,0]));
+    fn test_get_color() {
+        assert_eq!(
+            RPS::new(RPSType::Rock).color(),
+            nannou::image::Rgb([128, 0, 0])
+        );
+        assert_eq!(
+            RPS::new(RPSType::Paper).color(),
+            nannou::image::Rgb([0, 0, 128])
+        );
+        assert_eq!(
+            RPS::new(RPSType::Scissor).color(),
+            nannou::image::Rgb([0, 128, 0])
+        );
     }
 
     #[test]
-    fn test_damage()
-    {
+    fn test_damage() {
         let mut p1 = RPS::new(RPSType::Rock);
         let health = p1.health;
         let dead = p1.take_damage(0);
@@ -187,8 +199,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reset()
-    {
+    fn test_reset() {
         let mut p1 = RPS::new(RPSType::Rock);
         p1.reset(RPSType::Paper);
         assert_eq!(p1.kind, RPSType::Paper);
