@@ -1,5 +1,9 @@
-pub trait RandomlyGeneratable {
-    fn generate_randomly() -> Box<dyn Iterator<Item = Self>>;
+use rand::Rng;
+
+pub trait GenerateRandomly {
+    fn generate_randomly<R>(rng: &mut R) -> Self
+    where
+        R: Rng;
 }
 
 pub trait Colored {

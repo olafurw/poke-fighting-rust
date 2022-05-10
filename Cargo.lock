@@ -1571,6 +1571,7 @@ name = "poke-fighting-rust"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "lazy_static",
  "nannou",
  "rand 0.8.5",
  "strum",

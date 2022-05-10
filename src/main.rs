@@ -2,7 +2,7 @@ use clap::{ArgEnum, Parser};
 use nannou::image::GenericImageView;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use poke_fighting_rust::{
-    Battle, Colored, Fighter, Pokemon, RandomlyGeneratable, SelectionAlgorithm, StreetFighter, RPS,
+    Battle, Colored, Fighter, GenerateRandomly, Pokemon, SelectionAlgorithm, StreetFighter, RPS,
 };
 
 /// Battle simulation
@@ -52,7 +52,7 @@ fn main() {
 
 fn run_app<T>()
 where
-    T: 'static + Colored + Fighter + RandomlyGeneratable,
+    T: 'static + Colored + Fighter + GenerateRandomly,
 {
     nannou::app(model::<T>).update(update).exit(exit).run()
 }
@@ -78,7 +78,7 @@ struct Model<T> {
     counter: usize,
 }
 
-fn model<T: 'static + Fighter + RandomlyGeneratable>(app: &App) -> Model<T> {
+fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
     let args = Args::parse();
     let img_width = args.width;
     let img_height = args.height;
@@ -100,13 +100,7 @@ fn model<T: 'static + Fighter + RandomlyGeneratable>(app: &App) -> Model<T> {
         .unwrap();
 
     Model {
-        battle: Battle::new(
-            T::generate_randomly(),
-            img_width,
-            img_height,
-            selection_algorithm,
-            !args.fightown,
-        ),
+        battle: Battle::new(img_width, img_height, selection_algorithm, !args.fightown),
         image: nannou::image::DynamicImage::ImageRgb8(nannou::image::RgbImage::new(
             img_width as u32,
             img_height as u32,

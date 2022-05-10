@@ -8,4 +8,4 @@ pub use battle::{Battle, Fighter, SelectionAlgorithm};
 pub use pokemon::Pokemon;
 pub use rps::RPS;
 pub use street_fighter::StreetFighter;
-pub use types::{Colored, RandomlyGeneratable};
+pub use types::{Colored, GenerateRandomly};
