@@ -126,6 +126,7 @@ fn update<T: Fighter + Colored>(_app: &App, model: &mut Model<T>, _update: Updat
 fn view<T>(app: &App, model: &Model<T>, frame: Frame)
 {
     let texture = nannou::wgpu::Texture::from_image(app, &model.image);
+    
     let (image_width, image_height) = model.image.dimensions();
     let width_ratio = model.window_width as f32 / image_width as f32;
     let height_ratio = model.window_height as f32 / image_height as f32;

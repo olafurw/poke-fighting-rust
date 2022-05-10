@@ -196,6 +196,13 @@ mod tests {
     }
 
     #[test]
+    fn test_get_color()
+    {
+        assert_eq!(Pokemon::new(PokemonType::Normal).color(), nannou::image::Rgb([168,168,120]));
+        assert_eq!(Pokemon::new(PokemonType::Fairy).color(), nannou::image::Rgb([240,182,188]));
+    }
+
+    #[test]
     fn test_damage()
     {
         let mut p1 = Pokemon::new(PokemonType::Normal);

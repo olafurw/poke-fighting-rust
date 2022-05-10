@@ -78,16 +78,16 @@ impl RPS
     pub fn new(kind: RPSType) -> Self
     {
         RPS {
-            health: 1,
-            damage: 1,
+            health: 100,
+            damage: 100,
             kind,
         }
     }
 
     fn reset(&mut self, kind: RPSType)
     {
-        self.health = 1;
-        self.damage = 1;
+        self.health = 100;
+        self.damage = 100;
         self.kind = kind;
     }
 
@@ -149,10 +149,25 @@ mod tests {
     #[test]
     fn test_get_effectiveness()
     {
-        assert_eq!(
-            RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Scissor)),
-            100
-        );
+        assert_eq!(RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Scissor)), 100);
+        assert_eq!(RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Rock)), 100);
+        assert_eq!(RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Paper)), 100);
+
+        assert_eq!(RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Rock)), 0);
+        assert_eq!(RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Paper)), 0);
+        assert_eq!(RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Scissor)), 0);
+
+        assert_eq!(RPS::new(RPSType::Scissor).get_effectiveness(&RPS::new(RPSType::Scissor)), 0);
+        assert_eq!(RPS::new(RPSType::Rock).get_effectiveness(&RPS::new(RPSType::Rock)), 0);
+        assert_eq!(RPS::new(RPSType::Paper).get_effectiveness(&RPS::new(RPSType::Paper)), 0);
+    }
+
+    #[test]
+    fn test_get_color()
+    {
+        assert_eq!(RPS::new(RPSType::Rock).color(), nannou::image::Rgb([128,0,0]));
+        assert_eq!(RPS::new(RPSType::Paper).color(), nannou::image::Rgb([0,0,128]));
+        assert_eq!(RPS::new(RPSType::Scissor).color(), nannou::image::Rgb([0,128,0]));
     }
 
     #[test]
@@ -166,7 +181,7 @@ mod tests {
         assert!(!dead);
 
         let health = p1.health;
-        let dead = p1.take_damage(1);
+        let dead = p1.take_damage(100);
 
         assert_ne!(health, p1.health);
         assert!(dead);
@@ -179,7 +194,7 @@ mod tests {
         p1.reset(RPSType::Paper);
         assert_eq!(p1.kind, RPSType::Paper);
 
-        let dead = p1.take_damage(1);
+        let dead = p1.take_damage(100);
         assert!(dead);
 
         p1.reset(RPSType::Scissor);
