@@ -1,78 +1,71 @@
+use crate::battle::Fighter;
+use crate::types::{Colored, RandomlyGeneratable};
 use rand::distributions::Uniform;
 use rand::Rng;
-use strum::{FromRepr,EnumCount};
-
-use crate::types::{RandomlyGeneratable, Colored};
-use crate::battle::Fighter;
+use strum::{EnumCount, FromRepr};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
-pub enum PokemonType
-{
-	Normal,
-	Fire,
-	Water,
-	Electric,
-	Grass,
-	Ice,
-	Fighting,
-	Poison,
-	Ground,
-	Flying,
-	Psychic,
-	Bug,
-	Rock,
-	Ghost,
-	Dragon,
-	Dark,
-	Steel,
-	Fairy
+pub enum PokemonType {
+    Normal,
+    Fire,
+    Water,
+    Electric,
+    Grass,
+    Ice,
+    Fighting,
+    Poison,
+    Ground,
+    Flying,
+    Psychic,
+    Bug,
+    Rock,
+    Ghost,
+    Dragon,
+    Dark,
+    Steel,
+    Fairy,
 }
 
-impl From<usize> for PokemonType
-{
-    fn from(repr: usize) -> Self
-    {
+impl From<usize> for PokemonType {
+    fn from(repr: usize) -> Self {
         Self::from_repr(repr).unwrap()
     }
 }
 
-impl From<PokemonType> for usize
-{
-    fn from(kind: PokemonType) -> Self
-    {
+impl From<PokemonType> for usize {
+    fn from(kind: PokemonType) -> Self {
         kind as Self
     }
 }
 
-impl From<PokemonType> for nannou::image::Rgb<u8>
-{
-	fn from(kind: PokemonType) -> Self
-	{
-		match kind
-		{
-			PokemonType::Normal => [168,168,120],
-			PokemonType::Fire => [240,128,48],
-			PokemonType::Water => [104,144,240],
-			PokemonType::Electric => [248,208,48],
-			PokemonType::Grass => [120,200,80],
-			PokemonType::Ice => [152,216,216],
-			PokemonType::Fighting => [192,48,40],
-			PokemonType::Poison => [160,64,160],
-			PokemonType::Ground => [224,192,104],
-			PokemonType::Flying => [168,144,240],
-			PokemonType::Psychic => [248,88,136],
-			PokemonType::Bug => [168,184,32],
-			PokemonType::Rock => [184,160,56],
-			PokemonType::Ghost => [112,88,152],
-			PokemonType::Dragon => [112,56,248],
-			PokemonType::Dark => [112,88,72],
-			PokemonType::Steel => [184,184,208],
-			PokemonType::Fairy => [240,182,188],
-		}.into()
+impl From<PokemonType> for nannou::image::Rgb<u8> {
+    fn from(kind: PokemonType) -> Self {
+        match kind {
+            PokemonType::Normal => [168, 168, 120],
+            PokemonType::Fire => [240, 128, 48],
+            PokemonType::Water => [104, 144, 240],
+            PokemonType::Electric => [248, 208, 48],
+            PokemonType::Grass => [120, 200, 80],
+            PokemonType::Ice => [152, 216, 216],
+            PokemonType::Fighting => [192, 48, 40],
+            PokemonType::Poison => [160, 64, 160],
+            PokemonType::Ground => [224, 192, 104],
+            PokemonType::Flying => [168, 144, 240],
+            PokemonType::Psychic => [248, 88, 136],
+            PokemonType::Bug => [168, 184, 32],
+            PokemonType::Rock => [184, 160, 56],
+            PokemonType::Ghost => [112, 88, 152],
+            PokemonType::Dragon => [112, 56, 248],
+            PokemonType::Dark => [112, 88, 72],
+            PokemonType::Steel => [184, 184, 208],
+            PokemonType::Fairy => [240, 182, 188],
+        }
+        .into()
     }
 }
 
+#[rustfmt::skip]
 const EFFICIENCY: [[i32; PokemonType::COUNT]; PokemonType::COUNT] = [
 	[ 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,  50,   0, 100, 100,  50, 100 ], // Normal
 	[ 100,  50,  50, 100, 200, 200, 100, 100, 100, 100, 100, 200,  50, 100,  50, 100, 200, 100 ], // Fire
@@ -94,84 +87,72 @@ const EFFICIENCY: [[i32; PokemonType::COUNT]; PokemonType::COUNT] = [
 	[ 100,  50, 100, 100, 100, 100, 200,  50, 100, 100, 100, 100, 100, 100, 200, 200,  50, 100 ]  // Fairy
 ];
 
-fn get_effectiveness(attacker: usize, defender: usize) -> i32
-{
+fn get_effectiveness(attacker: usize, defender: usize) -> i32 {
     EFFICIENCY[attacker][defender]
 }
 
 #[derive(Clone)]
-pub struct Pokemon
-{
+pub struct Pokemon {
     health: i32,
     damage: i32,
     kind: PokemonType,
 }
 
-impl Pokemon
-{
-    pub fn new(kind: PokemonType) -> Self
-    {
+impl Pokemon {
+    pub fn new(kind: PokemonType) -> Self {
         Pokemon {
             health: 80,
             damage: 40,
-            kind
+            kind,
         }
     }
 
-    fn reset(&mut self, kind: PokemonType)
-    {
+    fn reset(&mut self, kind: PokemonType) {
         self.health = 80;
         self.damage = 40;
         self.kind = kind;
     }
 
-    fn take_damage(&mut self, damage: i32) -> bool
-    {
+    fn take_damage(&mut self, damage: i32) -> bool {
         self.health -= damage;
 
         self.health <= 0
     }
 }
 
-impl Fighter for Pokemon
-{
-    fn should_fight(&self, defender: &Self) -> bool
-    {
+impl Fighter for Pokemon {
+    fn should_fight(&self, defender: &Self) -> bool {
         self.kind != defender.kind
     }
 
-    fn get_effectiveness(&self, defender: &Self) -> i32
-    {
+    fn get_effectiveness(&self, defender: &Self) -> i32 {
         get_effectiveness(self.kind.into(), defender.kind.into())
     }
 
-    fn fight(&self, defender: &mut Self) -> bool
-    {
+    fn fight(&self, defender: &mut Self) -> bool {
         let effectiveness = self.get_effectiveness(defender);
         let damage = self.damage * effectiveness / 100;
 
         let is_dead = defender.take_damage(damage);
-        if is_dead
-        {
+        if is_dead {
             defender.reset(self.kind);
         }
         is_dead
     }
 }
 
-impl RandomlyGeneratable for Pokemon
-{
-    fn generate_randomly() -> Box<dyn Iterator<Item=Self>>
-    {
+impl RandomlyGeneratable for Pokemon {
+    fn generate_randomly() -> Box<dyn Iterator<Item = Self>> {
         let rng = rand::thread_rng();
-        Box::new(rng.sample_iter(Uniform::from(0..PokemonType::COUNT)).map(|t| Self::new(t.into())))
+        Box::new(
+            rng.sample_iter(Uniform::from(0..PokemonType::COUNT))
+                .map(|t| Self::new(t.into())),
+        )
     }
 }
 
-impl Colored for Pokemon
-{
-    fn color(&self) -> nannou::image::Rgb<u8>
-    {
+impl Colored for Pokemon {
+    fn color(&self) -> nannou::image::Rgb<u8> {
         self.kind.into()
     }
 }
@@ -181,30 +162,41 @@ mod tests {
     use super::*;
 
     #[test]
-    fn convert_type_from_usize()
-    {
+    fn convert_type_from_usize() {
         assert_eq!(PokemonType::from_repr(0).unwrap(), PokemonType::Normal);
         assert_eq!(PokemonType::from_repr(17).unwrap(), PokemonType::Fairy);
     }
 
     #[test]
-    fn test_get_effectiveness()
-    {
-        assert_eq!(Pokemon::new(PokemonType::Normal).get_effectiveness(&Pokemon::new(PokemonType::Normal)), 100);
-        assert_eq!(Pokemon::new(PokemonType::Fire).get_effectiveness(&Pokemon::new(PokemonType::Steel)), 200);
-        assert_eq!(Pokemon::new(PokemonType::Water).get_effectiveness(&Pokemon::new(PokemonType::Grass)), 50);
+    fn test_get_effectiveness() {
+        assert_eq!(
+            Pokemon::new(PokemonType::Normal).get_effectiveness(&Pokemon::new(PokemonType::Normal)),
+            100
+        );
+        assert_eq!(
+            Pokemon::new(PokemonType::Fire).get_effectiveness(&Pokemon::new(PokemonType::Steel)),
+            200
+        );
+        assert_eq!(
+            Pokemon::new(PokemonType::Water).get_effectiveness(&Pokemon::new(PokemonType::Grass)),
+            50
+        );
     }
 
     #[test]
-    fn test_get_color()
-    {
-        assert_eq!(Pokemon::new(PokemonType::Normal).color(), nannou::image::Rgb([168,168,120]));
-        assert_eq!(Pokemon::new(PokemonType::Fairy).color(), nannou::image::Rgb([240,182,188]));
+    fn test_get_color() {
+        assert_eq!(
+            Pokemon::new(PokemonType::Normal).color(),
+            nannou::image::Rgb([168, 168, 120])
+        );
+        assert_eq!(
+            Pokemon::new(PokemonType::Fairy).color(),
+            nannou::image::Rgb([240, 182, 188])
+        );
     }
 
     #[test]
-    fn test_damage()
-    {
+    fn test_damage() {
         let mut p1 = Pokemon::new(PokemonType::Normal);
         let health = p1.health;
         let dead = p1.take_damage(40);
@@ -220,8 +212,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reset()
-    {
+    fn test_reset() {
         let mut p1 = Pokemon::new(PokemonType::Normal);
         p1.reset(PokemonType::Fire);
         assert_eq!(p1.kind, PokemonType::Fire);
