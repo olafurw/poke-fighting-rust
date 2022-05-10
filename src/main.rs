@@ -1,53 +1,48 @@
-use clap::{ArgEnum, Parser};
+use clap::Parser;
 use nannou::image::GenericImageView;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
+use once_cell::sync::OnceCell;
 use poke_fighting_rust::{
-    Battle, Colored, Fighter, GenerateRandomly, Pokemon, SelectionAlgorithm, StreetFighter, RPS,
+    Args, Battle, Colored, Fighter, FighterType, GenerateRandomly, Pokemon, SelectionAlgorithm,
+    StreetFighter, RPS,
 };
+use std::fs::File;
+use std::io;
+use std::path::PathBuf;
 
-/// Battle simulation
+// Needed because of nannou's not so great model function pointer
+static ARGS: OnceCell<Args> = OnceCell::new();
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-struct Args {
-    /// Fighter type, either pokemon or rps
-    #[clap(arg_enum, short='t', long, default_value_t = FighterType::StreetFighter)]
-    fighter_type: FighterType,
-
-    /// Image width
-    #[clap(short='w', long, default_value_t = 512, validator = validate_size)]
-    width: usize,
-
-    /// Image height
-    #[clap(short='h', long, default_value_t = 512, validator = validate_size)]
-    height: usize,
-
-    /// When fighting, select random neighbour instead of the weakest one
-    #[clap(short = 'r', long)]
-    random: bool,
-
-    /// Measure frame rate and print it to stdout
-    #[clap(short = 'f', long)]
-    framerate: bool,
-
-    /// Let fighters fight their own kind
-    #[clap(short = 'o', long)]
-    fightown: bool,
+pub struct AllArgs {
+    #[clap(flatten)]
+    args: Args,
+    /// Config JSON file to use. When passed, overrides all command line arguments
+    #[clap(short = 'c', long)]
+    config: Option<PathBuf>,
 }
 
-#[derive(ArgEnum, Clone, Debug)]
-enum FighterType {
-    Pokemon,
-    RockPaperScissors,
-    StreetFighter,
+fn parse_args() -> io::Result<&'static Args> {
+    let all_args = AllArgs::parse();
+    let args = if let Some(config) = all_args.config {
+        let file = File::open(config)?;
+        let reader = io::BufReader::new(file);
+        serde_json::from_reader(reader)?
+    } else {
+        all_args.args
+    };
+    Ok(ARGS.get_or_init(|| args))
 }
 
-fn main() {
-    let args = Args::parse();
+fn main() -> io::Result<()> {
+    let args = parse_args()?;
     match args.fighter_type {
         FighterType::Pokemon => run_app::<Pokemon>(),
         FighterType::RockPaperScissors => run_app::<RPS>(),
         FighterType::StreetFighter => run_app::<StreetFighter>(),
     };
+    Ok(())
 }
 
 fn run_app<T>()
@@ -55,17 +50,6 @@ where
     T: 'static + Colored + Fighter + GenerateRandomly,
 {
     nannou::app(model::<T>).update(update).exit(exit).run()
-}
-
-fn validate_size(arg: &str) -> Result<(), String> {
-    if let Ok(size) = arg.parse::<usize>() {
-        // wgpu won't allow more than 8192 pixels
-        if !(32..8193).contains(&size) {
-            return Err("image size should be between 32 and 8192".to_string());
-        }
-    }
-
-    Ok(())
 }
 
 struct Model<T> {
@@ -79,7 +63,7 @@ struct Model<T> {
 }
 
 fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
-    let args = Args::parse();
+    let args = ARGS.get().unwrap();
     let img_width = args.width;
     let img_height = args.height;
     let selection_algorithm = if args.random {
