@@ -145,23 +145,25 @@ fn view<T>(app: &App, model: &Model<T>, frame: Frame)
 
 fn event<T>(app: &App, model: &mut Model<T>, ev: nannou::event::WindowEvent)
 {
-    // todo turn into a match
-    if let WindowEvent::KeyPressed(nannou::event::Key::Space) = &ev
+    match &ev
     {
-        if let nannou::app::LoopMode::RefreshSync = app.loop_mode()
+        WindowEvent::KeyPressed(nannou::event::Key::Space) =>
         {
-            app.set_loop_mode(nannou::app::LoopMode::loop_ntimes(0));
-        }
-        else
+            if let nannou::app::LoopMode::RefreshSync = app.loop_mode()
+            {
+                app.set_loop_mode(nannou::app::LoopMode::loop_ntimes(0));
+            }
+            else
+            {
+                app.set_loop_mode(nannou::app::LoopMode::refresh_sync());
+            }    
+        },
+        WindowEvent::Resized(resized) =>
         {
-            app.set_loop_mode(nannou::app::LoopMode::refresh_sync());
-        }
-    }
-
-    if let WindowEvent::Resized(resized) = &ev
-    {
-        model.window_width = resized.x as u32;
-        model.window_height = resized.y as u32;
+            model.window_width = resized.x as u32;
+            model.window_height = resized.y as u32;
+        },
+        _ => {}
     }
 }
 
