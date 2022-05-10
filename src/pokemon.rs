@@ -1,6 +1,7 @@
 use crate::battle::Fighter;
-use crate::types::{Colored, RandomlyGeneratable};
-use rand::distributions::Uniform;
+use crate::types::{Colored, GenerateRandomly};
+use lazy_static::lazy_static;
+use rand::distributions::{Distribution, Uniform};
 use rand::Rng;
 use strum::{EnumCount, FromRepr};
 
@@ -141,13 +142,17 @@ impl Fighter for Pokemon {
     }
 }
 
-impl RandomlyGeneratable for Pokemon {
-    fn generate_randomly() -> Box<dyn Iterator<Item = Self>> {
-        let rng = rand::thread_rng();
-        Box::new(
-            rng.sample_iter(Uniform::from(0..PokemonType::COUNT))
-                .map(|t| Self::new(t.into())),
-        )
+lazy_static! {
+    static ref DISTRIBUTION: Uniform<usize> = Uniform::new(0, PokemonType::COUNT);
+}
+
+impl GenerateRandomly for Pokemon {
+    fn generate_randomly<R>(rng: &mut R) -> Self
+    where
+        R: Rng,
+    {
+        let t = DISTRIBUTION.sample(rng);
+        Self::new(t.into())
     }
 }
 

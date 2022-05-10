@@ -1,5 +1,7 @@
+use crate::types::GenerateRandomly;
 use rand::seq::IteratorRandom;
 use rand::Rng;
+use std::iter;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Location {
@@ -52,17 +54,42 @@ pub struct Battle<T> {
     selection_callback: fn(&mut Self, Location, usize, usize) -> Location,
 }
 
-impl<T: Fighter> Battle<T> {
+fn generate_fighters_row<T, R>(rng: &mut R, width: usize) -> Vec<T>
+where
+    T: GenerateRandomly,
+    R: Rng,
+{
+    iter::repeat_with(|| T::generate_randomly(rng))
+        .take(width)
+        .collect()
+}
+
+fn generate_fighters<T, R>(rng: &mut R, width: usize, height: usize) -> Vec<Vec<T>>
+where
+    T: GenerateRandomly,
+    R: Rng,
+{
+    iter::repeat_with(|| generate_fighters_row(rng, width))
+        .take(height)
+        .collect()
+}
+
+impl<T> Battle<T>
+where
+    T: GenerateRandomly + Fighter,
+{
     pub fn new(
-        mut fighter_source: impl Iterator<Item = T>,
         img_width: usize,
         img_height: usize,
         selection_algorithm: SelectionAlgorithm,
         filter_fight_candidates: bool,
     ) -> Self {
-        let mut battle = Self {
-            fighters: Vec::with_capacity(img_height),
-            rng: rand::thread_rng(),
+        let mut rng = rand::thread_rng();
+        let fighters = generate_fighters(&mut rng, img_width, img_height);
+
+        Self {
+            fighters,
+            rng,
             selection_callback: if filter_fight_candidates {
                 match selection_algorithm {
                     SelectionAlgorithm::WeakestNeighbour => Battle::weakest_neighbour_filtered,
@@ -74,17 +101,14 @@ impl<T: Fighter> Battle<T> {
                     SelectionAlgorithm::RandomNeighbour => Battle::random_neighbour,
                 }
             },
-        };
-        for _ in 0..img_height {
-            let row = (0..img_width)
-                .map(|_| fighter_source.next().unwrap())
-                .collect();
-            battle.fighters.push(row);
         }
-
-        battle
     }
+}
 
+impl<T> Battle<T>
+where
+    T: Fighter,
+{
     pub fn fighter(&self, x: u32, y: u32) -> &T {
         &self.fighters[y as usize][x as usize]
     }

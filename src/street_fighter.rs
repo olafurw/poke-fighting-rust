@@ -4,9 +4,9 @@
 // And OCR does not handle them well.
 
 use crate::battle::Fighter;
-use crate::types::{Colored, RandomlyGeneratable};
+use crate::types::{Colored, GenerateRandomly};
+use lazy_static::lazy_static;
 use rand::distributions::{Distribution, Uniform};
-use rand::prelude::ThreadRng;
 use rand::Rng;
 use strum::{EnumCount, FromRepr};
 
@@ -52,13 +52,6 @@ pub enum StreetFighterType {
     Hakan,
     THawk,
     Dan,
-}
-
-impl StreetFighterType {
-    pub fn random(rng: &mut ThreadRng, die: &Uniform<usize>) -> Self {
-        let value = die.sample(rng);
-        StreetFighterType::from_repr(value).unwrap()
-    }
 }
 
 impl From<usize> for StreetFighterType {
@@ -216,13 +209,17 @@ impl Fighter for StreetFighter {
     }
 }
 
-impl RandomlyGeneratable for StreetFighter {
-    fn generate_randomly() -> Box<dyn Iterator<Item = Self>> {
-        let rng = rand::thread_rng();
-        Box::new(
-            rng.sample_iter(Uniform::from(0..StreetFighterType::COUNT))
-                .map(|t| Self::new(t.into())),
-        )
+lazy_static! {
+    static ref DISTRIBUTION: Uniform<usize> = Uniform::new(0, StreetFighterType::COUNT);
+}
+
+impl GenerateRandomly for StreetFighter {
+    fn generate_randomly<R>(rng: &mut R) -> Self
+    where
+        R: Rng,
+    {
+        let t = DISTRIBUTION.sample(rng);
+        Self::new(t.into())
     }
 }
 
