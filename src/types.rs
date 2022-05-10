@@ -3,6 +3,7 @@ pub enum FighterType
 {
     Pokemon,
     RPS,
+    StreetFighter,
 }
 
 impl std::str::FromStr for FighterType
@@ -15,6 +16,7 @@ impl std::str::FromStr for FighterType
         {
             "pokemon" => Ok(FighterType::Pokemon),
             "rps" => Ok(FighterType::RPS),
+            "streetfighter" => Ok(FighterType::StreetFighter),
             _ => Err("Unknown fighter type".to_string())
         }
     }
@@ -28,6 +30,7 @@ impl std::fmt::Display for FighterType
         {
             FighterType::Pokemon => "pokemon",
             FighterType::RPS => "rps",
+            FighterType::StreetFighter => "streetfighter",
         })
     }
 }

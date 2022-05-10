@@ -1,7 +1,7 @@
 use clap::Parser;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use nannou::image::GenericImageView;
-use poke_fighting_rust::{Battle, Colored, Fighter, FighterType, Pokemon, RandomlyGeneratable, RPS, SelectionAlgorithm};
+use poke_fighting_rust::{Battle, Colored, Fighter, FighterType, Pokemon, RandomlyGeneratable, RPS, StreetFighter, SelectionAlgorithm};
 
 /// Battle simulation
 #[derive(Parser, Debug)]
@@ -9,7 +9,7 @@ use poke_fighting_rust::{Battle, Colored, Fighter, FighterType, Pokemon, Randoml
 struct Args
 {
     /// Fighter type, either pokemon or rps
-    #[clap(short='t', long, default_value_t = FighterType::Pokemon)]
+    #[clap(short='t', long, default_value_t = FighterType::StreetFighter)]
     fighter_type: FighterType,
 
     /// Image width
@@ -40,6 +40,7 @@ fn main()
     {
         FighterType::Pokemon => nannou::app(model::<Pokemon>).update(update).exit(exit).run(),
         FighterType::RPS => nannou::app(model::<RPS>).update(update).exit(exit).run(),
+        FighterType::StreetFighter => nannou::app(model::<StreetFighter>).update(update).exit(exit).run(),
     };
 }
 

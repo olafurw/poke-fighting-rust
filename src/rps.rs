@@ -4,7 +4,6 @@ use rand::Rng;
 use strum::{FromRepr,EnumCount};
 use crate::types::{RandomlyGeneratable, Colored};
 
-
 use crate::battle::Fighter;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
