@@ -1,9 +1,11 @@
+mod args;
 mod battle;
 mod pokemon;
 mod rps;
 mod street_fighter;
 mod types;
 
+pub use args::{Args, FighterType};
 pub use battle::{Battle, Fighter, SelectionAlgorithm};
 pub use pokemon::Pokemon;
 pub use rps::RPS;

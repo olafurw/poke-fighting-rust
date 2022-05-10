@@ -1,0 +1,8 @@
+{
+  "fighter_type": "Pokemon",
+  "width": 256,
+  "height": 256,
+  "random": true,
+  "framerate": true,
+  "fightown": true
+}
