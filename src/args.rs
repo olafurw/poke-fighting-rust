@@ -44,6 +44,7 @@ fn default_size() -> usize {
 }
 
 #[derive(ArgEnum, Clone, Debug, Deserialize)]
+#[serde(rename_all(deserialize = "kebab-case"))]
 pub enum FighterType {
     Pokemon,
     RockPaperScissors,
