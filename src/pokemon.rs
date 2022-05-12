@@ -88,8 +88,8 @@ const EFFICIENCY: [[i32; PokemonType::COUNT]; PokemonType::COUNT] = [
 	[ 100,  50, 100, 100, 100, 100, 200,  50, 100, 100, 100, 100, 100, 100, 200, 200,  50, 100 ]  // Fairy
 ];
 
-fn get_effectiveness(attacker: usize, defender: usize) -> i32 {
-    EFFICIENCY[attacker][defender]
+fn get_effectiveness(attacker: PokemonType, defender: PokemonType) -> i32 {
+    EFFICIENCY[attacker as usize][defender as usize]
 }
 
 #[derive(Clone)]
@@ -127,7 +127,7 @@ impl Fighter for Pokemon {
     }
 
     fn get_effectiveness(&self, defender: &Self) -> i32 {
-        get_effectiveness(self.kind.into(), defender.kind.into())
+        get_effectiveness(self.kind, defender.kind)
     }
 
     fn fight(&self, defender: &mut Self) -> bool {
