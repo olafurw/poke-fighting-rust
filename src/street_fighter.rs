@@ -156,8 +156,8 @@ const EFFICIENCY: [[i32; StreetFighterType::COUNT]; StreetFighterType::COUNT] = 
     [30, 40, 40, 40, 40, 30, 40, 40, 40, 40, 50, 40, 30, 40, 30, 40, 40, 30, 30, 40, 40, 40, 40, 40, 40, 40, 40, 40, 50, 40, 40, 40, 40, 40, 40, 40, 40, 40,  0],
 ];
 
-fn get_effectiveness(attacker: usize, defender: usize) -> i32 {
-    EFFICIENCY[attacker][defender]
+fn get_effectiveness(attacker: StreetFighterType, defender: StreetFighterType) -> i32 {
+    EFFICIENCY[attacker as usize][defender as usize]
 }
 
 #[derive(Clone)]
@@ -191,7 +191,7 @@ impl Fighter for StreetFighter {
     }
 
     fn get_effectiveness(&self, defender: &Self) -> i32 {
-        get_effectiveness(self.kind.into(), defender.kind.into())
+        get_effectiveness(self.kind, defender.kind)
     }
 
     fn fight(&self, defender: &mut Self) -> bool {
