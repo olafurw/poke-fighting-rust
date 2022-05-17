@@ -1,40 +1,9 @@
+use crate::grid::{Grid2D, Size};
 use crate::types::GenerateRandomly;
 use rand::seq::IteratorRandom;
 use rand::Rng;
-use std::iter;
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub struct Location {
-    pub x: usize,
-    pub y: usize,
-}
-
-impl Location {
-    pub fn is_outside(&self, img_width: usize, img_height: usize) -> bool {
-        self.x > img_width || self.y > img_height
-    }
-
-    pub fn neighbours(&self, img_width: usize, img_height: usize) -> [Location; 4] {
-        [
-            Location {
-                x: self.x,
-                y: (self.y + img_height - 1) % img_height,
-            },
-            Location {
-                x: (self.x + 1) % img_width,
-                y: self.y,
-            },
-            Location {
-                x: self.x,
-                y: (self.y + 1) % img_height,
-            },
-            Location {
-                x: (self.x + img_width - 1) % img_width,
-                y: self.y,
-            },
-        ]
-    }
-}
+type Location = (usize, usize);
 
 #[derive(Debug, Copy, Clone)]
 pub enum SelectionAlgorithm {
@@ -49,29 +18,9 @@ pub trait Fighter {
 }
 
 pub struct Battle<T> {
-    fighters: Vec<Vec<T>>,
+    fighters: Grid2D<T>,
     rng: rand::rngs::ThreadRng,
-    selection_callback: fn(&mut Self, Location, usize, usize) -> Location,
-}
-
-fn generate_fighters_row<T, R>(rng: &mut R, width: usize) -> Vec<T>
-where
-    T: GenerateRandomly,
-    R: Rng,
-{
-    iter::repeat_with(|| T::generate_randomly(rng))
-        .take(width)
-        .collect()
-}
-
-fn generate_fighters<T, R>(rng: &mut R, width: usize, height: usize) -> Vec<Vec<T>>
-where
-    T: GenerateRandomly,
-    R: Rng,
-{
-    iter::repeat_with(|| generate_fighters_row(rng, width))
-        .take(height)
-        .collect()
+    selection_callback: fn(&mut Self, Location, Size) -> Option<Location>,
 }
 
 impl<T> Battle<T>
@@ -85,7 +34,7 @@ where
         filter_fight_candidates: bool,
     ) -> Self {
         let mut rng = rand::thread_rng();
-        let fighters = generate_fighters(&mut rng, img_width, img_height);
+        let fighters = Grid2D::new_with((img_width, img_height), || T::generate_randomly(&mut rng));
 
         Self {
             fighters,
@@ -109,53 +58,26 @@ impl<T> Battle<T>
 where
     T: Fighter,
 {
-    pub fn fighter(&self, x: u32, y: u32) -> &T {
-        &self.fighters[y as usize][x as usize]
+    pub fn fighter(&self, location: Location) -> Option<&T> {
+        self.fighters.get(location)
     }
 
-    fn fighters(&mut self, loc1: Location, loc2: Location) -> (&mut T, &mut T) {
-        // Best way to get two mutable references to one array seems to be split_at_mut().
-        // It's rather awkward for a two-dimensional array however.
-        if loc1.y == loc2.y {
-            let (slice1, slice2) =
-                self.fighters[loc1.y].split_at_mut(std::cmp::max(loc1.x, loc2.x));
-            if loc1.x < loc2.x {
-                (&mut slice1[loc1.x], &mut slice2[0])
-            } else {
-                (&mut slice2[0], &mut slice1[loc2.x])
-            }
-        } else {
-            let (slice1, slice2) = self.fighters.split_at_mut(std::cmp::max(loc1.y, loc2.y));
-            if loc1.y < loc2.y {
-                (&mut slice1[loc1.y][loc1.x], &mut slice2[0][loc2.x])
-            } else {
-                (&mut slice2[0][loc1.x], &mut slice1[loc2.y][loc2.x])
-            }
-        }
-    }
-
-    pub fn action(&mut self) -> u32 {
+    pub fn action(&mut self) {
         // We use prime numbers as offsets to loop through the entries in a semi-random fashion.
         // These particular prime numbers have been chosen by a fair dice roll.
         const PRIMES: &[usize] = &[48817, 58099, 89867, 105407, 126943, 200723, 221021, 231677];
-        let img_width = self.fighters[0].len();
-        let img_height = self.fighters.len();
-        let num_entries = img_width * img_height;
+        let (w, h) = self.fighters.size();
+        let num_entries = self.fighters.count();
 
-        let mut death_count = 0;
         let start = self.rng.gen_range(0..num_entries);
         let offset = PRIMES[self.rng.gen_range(0..PRIMES.len())];
         let mut current = start;
 
         loop {
-            let attacker_loc = Location {
-                x: current % img_width,
-                y: current / img_width,
-            };
-            let defender_loc = (self.selection_callback)(self, attacker_loc, img_width, img_height);
-
-            if self.fight(attacker_loc, defender_loc) {
-                death_count += 1;
+            let attacker_loc = (current % w, current / h);
+            let defender_loc = (self.selection_callback)(self, attacker_loc, (w, h));
+            if let Some(defender_loc) = defender_loc {
+                self.fight(attacker_loc, defender_loc);
             }
 
             current = (current + offset) % num_entries;
@@ -163,93 +85,59 @@ where
                 break;
             }
         }
-
-        death_count
     }
 
-    pub fn fight(&mut self, attacker_loc: Location, defender_loc: Location) -> bool {
-        let img_width = self.fighters[0].len();
-        let img_height = self.fighters.len();
-        if attacker_loc == defender_loc
-            || attacker_loc.is_outside(img_width, img_height)
-            || defender_loc.is_outside(img_width, img_height)
-        {
-            return false;
+    pub fn fight(&mut self, attacker_loc: Location, defender_loc: Location) {
+        if let Some((attacker, defender)) = self.fighters.get_pair_mut(attacker_loc, defender_loc) {
+            attacker.fight(defender);
         }
-
-        let (attacker, defender) = self.fighters(attacker_loc, defender_loc);
-        attacker.fight(defender)
     }
 
-    fn weakest_neighbour(
-        &mut self,
-        origin: Location,
-        img_width: usize,
-        img_height: usize,
-    ) -> Location {
-        let fighter = &self.fighters[origin.y][origin.x];
-
-        *origin
-            .neighbours(img_width, img_height)
-            .iter()
-            .max_by_key(|candidate| {
-                let neighbour = &self.fighters[candidate.y][candidate.x];
-                fighter.get_effectiveness(neighbour)
-            })
-            .unwrap_or(&origin)
+    fn weakest_neighbour(&mut self, origin: Location, size: Size) -> Option<Location> {
+        let fighter = self.fighters.get(origin)?;
+        neighbours(origin, size)
+            .into_iter()
+            .filter_map(|candidate| get_candidate(&self.fighters, candidate))
+            .max_by_key(|(neighbour, _)| fighter.get_effectiveness(neighbour))
+            .map(|(_, candidate)| candidate)
     }
 
-    fn weakest_neighbour_filtered(
-        &mut self,
-        origin: Location,
-        img_width: usize,
-        img_height: usize,
-    ) -> Location {
-        let fighter = &self.fighters[origin.y][origin.x];
-
-        *origin
-            .neighbours(img_width, img_height)
-            .iter()
-            .filter(|candidate| {
-                let neighbour = &self.fighters[candidate.y][candidate.x];
-                fighter.should_fight(neighbour)
-            })
-            .max_by_key(|candidate| {
-                let neighbour = &self.fighters[candidate.y][candidate.x];
-                fighter.get_effectiveness(neighbour)
-            })
-            .unwrap_or(&origin)
+    fn weakest_neighbour_filtered(&mut self, origin: Location, size: Size) -> Option<Location> {
+        let fighter = self.fighters.get(origin)?;
+        neighbours(origin, size)
+            .into_iter()
+            .into_iter()
+            .filter_map(|candidate| get_candidate(&self.fighters, candidate))
+            .filter(|(neighbour, _)| fighter.should_fight(neighbour))
+            .max_by_key(|(neighbour, _)| fighter.get_effectiveness(neighbour))
+            .map(|(_, candidate)| candidate)
     }
 
-    fn random_neighbour(
-        &mut self,
-        origin: Location,
-        img_width: usize,
-        img_height: usize,
-    ) -> Location {
-        *origin
-            .neighbours(img_width, img_height)
-            .iter()
+    fn random_neighbour(&mut self, origin: Location, size: Size) -> Option<Location> {
+        neighbours(origin, size).into_iter().choose(&mut self.rng)
+    }
+
+    fn random_neighbour_filtered(&mut self, origin: Location, size: Size) -> Option<Location> {
+        let fighter = self.fighters.get(origin)?;
+        neighbours(origin, size)
+            .into_iter()
+            .filter_map(|candidate| get_candidate(&self.fighters, candidate))
+            .filter(|(neighbour, _)| fighter.should_fight(neighbour))
             .choose(&mut self.rng)
-            .unwrap_or(&origin)
+            .map(|(_, candidate)| candidate)
     }
+}
 
-    fn random_neighbour_filtered(
-        &mut self,
-        origin: Location,
-        img_width: usize,
-        img_height: usize,
-    ) -> Location {
-        let fighter = &self.fighters[origin.y][origin.x];
+pub fn neighbours((x, y): Location, (w, h): Size) -> [Location; 4] {
+    [
+        (x, (y + h - 1) % h),
+        ((x + 1) % w, y),
+        (x, (y + 1) % h),
+        ((x + w - 1) % w, y),
+    ]
+}
 
-        *origin
-            .neighbours(img_width, img_height)
-            .iter()
-            .filter(|candidate| {
-                let neighbour = &self.fighters[candidate.y][candidate.x];
-                fighter.should_fight(neighbour)
-            })
-            .choose(&mut self.rng)
-            .unwrap_or(&origin)
-    }
+fn get_candidate<T>(grid: &Grid2D<T>, location: Location) -> Option<(&T, Location)> {
+    let item = grid.get(location)?;
+    Some((item, location))
 }
