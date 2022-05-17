@@ -43,8 +43,8 @@ const EFFICIENCY: [[i32; RPSType::COUNT]; RPSType::COUNT] = [
     [   0, 100,   0 ], // Scissor
 ];
 
-fn get_effectiveness(attacker: usize, defender: usize) -> i32 {
-    EFFICIENCY[attacker][defender]
+fn get_effectiveness(attacker: RPSType, defender: RPSType) -> i32 {
+    EFFICIENCY[attacker as usize][defender as usize]
 }
 
 #[derive(Clone)]
@@ -82,7 +82,7 @@ impl Fighter for RPS {
     }
 
     fn get_effectiveness(&self, defender: &Self) -> i32 {
-        get_effectiveness(self.kind.into(), defender.kind.into())
+        get_effectiveness(self.kind, defender.kind)
     }
 
     fn fight(&self, defender: &mut Self) -> bool {
