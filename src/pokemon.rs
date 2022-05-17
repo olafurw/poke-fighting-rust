@@ -1,6 +1,5 @@
 use crate::battle::Fighter;
-use crate::types::{Colored, GenerateRandomly};
-use lazy_static::lazy_static;
+use crate::types::{Colored, GenerateRandomly, Generator};
 use rand::distributions::{Distribution, Uniform};
 use rand::Rng;
 use strum::{EnumCount, FromRepr};
@@ -26,18 +25,6 @@ pub enum PokemonType {
     Dark,
     Steel,
     Fairy,
-}
-
-impl From<usize> for PokemonType {
-    fn from(repr: usize) -> Self {
-        Self::from_repr(repr).unwrap()
-    }
-}
-
-impl From<PokemonType> for usize {
-    fn from(kind: PokemonType) -> Self {
-        kind as Self
-    }
 }
 
 impl From<PokemonType> for nannou::image::Rgb<u8> {
@@ -142,17 +129,34 @@ impl Fighter for Pokemon {
     }
 }
 
-lazy_static! {
-    static ref DISTRIBUTION: Uniform<usize> = Uniform::new(0, PokemonType::COUNT);
+pub struct PokemonGenerator {
+    distribution: Uniform<usize>,
 }
 
-impl GenerateRandomly for Pokemon {
-    fn generate_randomly<R>(rng: &mut R) -> Self
+impl Default for PokemonGenerator {
+    fn default() -> Self {
+        Self {
+            distribution: Uniform::new(0, PokemonType::COUNT),
+        }
+    }
+}
+
+impl GenerateRandomly<Pokemon> for PokemonGenerator {
+    fn generate_randomly<R>(&self, rng: &mut R) -> Option<Pokemon>
     where
         R: Rng,
     {
-        let t = DISTRIBUTION.sample(rng);
-        Self::new(t.into())
+        let t = self.distribution.sample(rng);
+        let kind = PokemonType::from_repr(t)?;
+        Some(Pokemon::new(kind))
+    }
+}
+
+impl Generator for Pokemon {
+    type Generator = PokemonGenerator;
+
+    fn generator() -> Self::Generator {
+        PokemonGenerator::default()
     }
 }
 

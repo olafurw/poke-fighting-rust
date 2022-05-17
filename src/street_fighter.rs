@@ -4,14 +4,12 @@
 // And OCR does not handle them well.
 
 use crate::battle::Fighter;
-use crate::types::{Colored, GenerateRandomly};
-use lazy_static::lazy_static;
+use crate::types::{Colored, GenerateRandomly, Generator};
 use rand::distributions::{Distribution, Uniform};
 use rand::Rng;
 use strum::{EnumCount, FromRepr};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
-#[repr(usize)]
 pub enum StreetFighterType {
     Seth,
     CViper,
@@ -52,18 +50,6 @@ pub enum StreetFighterType {
     Hakan,
     THawk,
     Dan,
-}
-
-impl From<usize> for StreetFighterType {
-    fn from(repr: usize) -> Self {
-        Self::from_repr(repr).unwrap()
-    }
-}
-
-impl From<StreetFighterType> for usize {
-    fn from(kind: StreetFighterType) -> Self {
-        kind as Self
-    }
 }
 
 impl From<StreetFighterType> for nannou::image::Rgb<u8> {
@@ -209,17 +195,34 @@ impl Fighter for StreetFighter {
     }
 }
 
-lazy_static! {
-    static ref DISTRIBUTION: Uniform<usize> = Uniform::new(0, StreetFighterType::COUNT);
+pub struct StreetFighterGenerator {
+    distribution: Uniform<usize>,
 }
 
-impl GenerateRandomly for StreetFighter {
-    fn generate_randomly<R>(rng: &mut R) -> Self
+impl Default for StreetFighterGenerator {
+    fn default() -> Self {
+        Self {
+            distribution: Uniform::new(0, StreetFighterType::COUNT),
+        }
+    }
+}
+
+impl GenerateRandomly<StreetFighter> for StreetFighterGenerator {
+    fn generate_randomly<R>(&self, rng: &mut R) -> Option<StreetFighter>
     where
         R: Rng,
     {
-        let t = DISTRIBUTION.sample(rng);
-        Self::new(t.into())
+        let t = self.distribution.sample(rng);
+        let kind = StreetFighterType::from_repr(t)?;
+        Some(StreetFighter::new(kind))
+    }
+}
+
+impl Generator for StreetFighter {
+    type Generator = StreetFighterGenerator;
+
+    fn generator() -> Self::Generator {
+        StreetFighterGenerator::default()
     }
 }
 

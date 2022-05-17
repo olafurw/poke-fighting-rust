@@ -3,7 +3,7 @@ use nannou::image::GenericImageView;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use once_cell::sync::OnceCell;
 use poke_fighting_rust::{
-    Args, Battle, Colored, Fighter, FighterType, GenerateRandomly, Pokemon, SelectionAlgorithm,
+    Args, Battle, Colored, Fighter, FighterType, Generator, Pokemon, SelectionAlgorithm,
     StreetFighter, RPS,
 };
 use std::fs::File;
@@ -47,7 +47,7 @@ fn main() -> io::Result<()> {
 
 fn run_app<T>()
 where
-    T: 'static + Colored + Fighter + GenerateRandomly,
+    T: 'static + Colored + Fighter + Generator,
 {
     nannou::app(model::<T>).update(update).exit(exit).run()
 }
@@ -62,7 +62,7 @@ struct Model<T> {
     counter: usize,
 }
 
-fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
+fn model<T: 'static + Fighter + Generator>(app: &App) -> Model<T> {
     let args = ARGS.get().unwrap();
     let img_width = args.width;
     let img_height = args.height;

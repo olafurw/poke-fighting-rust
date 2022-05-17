@@ -1,7 +1,13 @@
 use rand::Rng;
 
-pub trait GenerateRandomly {
-    fn generate_randomly<R>(rng: &mut R) -> Self
+pub trait Generator: Sized {
+    type Generator: GenerateRandomly<Self>;
+
+    fn generator() -> Self::Generator;
+}
+
+pub trait GenerateRandomly<T> {
+    fn generate_randomly<R>(&self, rng: &mut R) -> Option<T>
     where
         R: Rng;
 }

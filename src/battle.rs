@@ -1,4 +1,4 @@
-use crate::types::GenerateRandomly;
+use crate::types::{GenerateRandomly, Generator};
 use rand::seq::IteratorRandom;
 use rand::Rng;
 use std::iter;
@@ -54,29 +54,35 @@ pub struct Battle<T> {
     selection_callback: fn(&mut Self, Location, usize, usize) -> Location,
 }
 
-fn generate_fighters_row<T, R>(rng: &mut R, width: usize) -> Vec<T>
+fn generate_fighters_row<T, R>(generator: &T::Generator, rng: &mut R, width: usize) -> Vec<T>
 where
-    T: GenerateRandomly,
+    T: Generator,
     R: Rng,
 {
-    iter::repeat_with(|| T::generate_randomly(rng))
+    iter::repeat_with(|| generator.generate_randomly(rng))
         .take(width)
+        .filter_map(|x| x)
         .collect()
 }
 
-fn generate_fighters<T, R>(rng: &mut R, width: usize, height: usize) -> Vec<Vec<T>>
+fn generate_fighters<T, R>(
+    generator: &T::Generator,
+    rng: &mut R,
+    width: usize,
+    height: usize,
+) -> Vec<Vec<T>>
 where
-    T: GenerateRandomly,
+    T: Generator,
     R: Rng,
 {
-    iter::repeat_with(|| generate_fighters_row(rng, width))
+    iter::repeat_with(|| generate_fighters_row(generator, rng, width))
         .take(height)
         .collect()
 }
 
 impl<T> Battle<T>
 where
-    T: GenerateRandomly + Fighter,
+    T: Generator + Fighter,
 {
     pub fn new(
         img_width: usize,
@@ -85,7 +91,8 @@ where
         filter_fight_candidates: bool,
     ) -> Self {
         let mut rng = rand::thread_rng();
-        let fighters = generate_fighters(&mut rng, img_width, img_height);
+        let generator = T::generator();
+        let fighters = generate_fighters(&generator, &mut rng, img_width, img_height);
 
         Self {
             fighters,

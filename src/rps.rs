@@ -1,28 +1,14 @@
 use crate::battle::Fighter;
-use crate::types::{Colored, GenerateRandomly};
-use lazy_static::lazy_static;
+use crate::types::{Colored, GenerateRandomly, Generator};
 use rand::distributions::{Distribution, Uniform};
 use rand::Rng;
 use strum::{EnumCount, FromRepr};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
-#[repr(usize)]
 pub enum RPSType {
     Rock,
     Paper,
     Scissor,
-}
-
-impl From<usize> for RPSType {
-    fn from(repr: usize) -> Self {
-        Self::from_repr(repr).unwrap()
-    }
-}
-
-impl From<RPSType> for usize {
-    fn from(kind: RPSType) -> Self {
-        kind as Self
-    }
 }
 
 impl From<RPSType> for nannou::image::Rgb<u8> {
@@ -97,17 +83,34 @@ impl Fighter for RPS {
     }
 }
 
-lazy_static! {
-    static ref DISTRIBUTION: Uniform<usize> = Uniform::new(0, RPSType::COUNT);
+pub struct RPSGenerator {
+    distribution: Uniform<usize>,
 }
 
-impl GenerateRandomly for RPS {
-    fn generate_randomly<R>(rng: &mut R) -> Self
+impl Default for RPSGenerator {
+    fn default() -> Self {
+        Self {
+            distribution: Uniform::new(0, RPSType::COUNT),
+        }
+    }
+}
+
+impl GenerateRandomly<RPS> for RPSGenerator {
+    fn generate_randomly<R>(&self, rng: &mut R) -> Option<RPS>
     where
         R: Rng,
     {
-        let t = DISTRIBUTION.sample(rng);
-        Self::new(t.into())
+        let t = self.distribution.sample(rng);
+        let kind = RPSType::from_repr(t)?;
+        Some(RPS::new(kind))
+    }
+}
+
+impl Generator for RPS {
+    type Generator = RPSGenerator;
+
+    fn generator() -> Self::Generator {
+        RPSGenerator::default()
     }
 }
 
