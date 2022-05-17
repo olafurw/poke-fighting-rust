@@ -1,6 +1,7 @@
 mod args;
 mod battle;
 mod pokemon;
+mod real_pokemons;
 mod rps;
 mod street_fighter;
 mod types;
@@ -11,3 +12,4 @@ pub use pokemon::Pokemon;
 pub use rps::RPS;
 pub use street_fighter::StreetFighter;
 pub use types::{Colored, Generator};
+pub use real_pokemons::RealPokemon;

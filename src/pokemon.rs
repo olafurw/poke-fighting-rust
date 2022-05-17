@@ -2,9 +2,10 @@ use crate::battle::Fighter;
 use crate::types::{Colored, GenerateRandomly, Generator};
 use rand::distributions::{Distribution, Uniform};
 use rand::Rng;
+use serde::Deserialize;
 use strum::{EnumCount, FromRepr};
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumCount, FromRepr)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, EnumCount, FromRepr)]
 #[repr(usize)]
 pub enum PokemonType {
     Normal,
@@ -75,7 +76,7 @@ const EFFICIENCY: [[i32; PokemonType::COUNT]; PokemonType::COUNT] = [
 	[ 100,  50, 100, 100, 100, 100, 200,  50, 100, 100, 100, 100, 100, 100, 200, 200,  50, 100 ]  // Fairy
 ];
 
-fn get_effectiveness(attacker: PokemonType, defender: PokemonType) -> i32 {
+pub fn get_effectiveness(attacker: PokemonType, defender: PokemonType) -> i32 {
     EFFICIENCY[attacker as usize][defender as usize]
 }
 

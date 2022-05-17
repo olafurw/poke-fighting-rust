@@ -61,7 +61,7 @@ where
 {
     iter::repeat_with(|| generator.generate_randomly(rng))
         .take(width)
-        .filter_map(|x| x)
+        .flatten()
         .collect()
 }
 

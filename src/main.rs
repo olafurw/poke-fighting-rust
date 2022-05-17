@@ -2,10 +2,7 @@ use clap::Parser;
 use nannou::image::GenericImageView;
 use nannou::prelude::{App, Frame, Update, WindowEvent};
 use once_cell::sync::OnceCell;
-use poke_fighting_rust::{
-    Args, Battle, Colored, Fighter, FighterType, Generator, Pokemon, SelectionAlgorithm,
-    StreetFighter, RPS,
-};
+use poke_fighting_rust::{Args, Battle, Colored, Fighter, FighterType, Generator, Pokemon, SelectionAlgorithm, StreetFighter, RPS, RealPokemon};
 use std::fs::File;
 use std::io;
 use std::path::PathBuf;
@@ -41,6 +38,7 @@ fn main() -> io::Result<()> {
         FighterType::Pokemon => run_app::<Pokemon>(),
         FighterType::RockPaperScissors => run_app::<RPS>(),
         FighterType::StreetFighter => run_app::<StreetFighter>(),
+        FighterType::RealPokemon => run_app::<RealPokemon>()
     };
     Ok(())
 }
