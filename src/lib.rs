@@ -1,5 +1,6 @@
 mod args;
 mod battle;
+mod grid;
 mod pokemon;
 mod rps;
 mod street_fighter;

@@ -102,8 +102,11 @@ fn update<T: Fighter + Colored>(_app: &App, model: &mut Model<T>, _update: Updat
 
     if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image {
         for (x, y, pixel) in pixels.enumerate_pixels_mut() {
-            let fighter = model.battle.fighter(x, y);
-            *pixel = fighter.color();
+            if let Some(fighter) = model.battle.fighter((x as usize, y as usize)) {
+                *pixel = fighter.color();
+            } else {
+                *pixel = [0, 0, 0].into()
+            }
         }
     }
 
