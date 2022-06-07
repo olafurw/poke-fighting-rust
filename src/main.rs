@@ -57,9 +57,7 @@ struct Model<T> {
     image: nannou::image::DynamicImage,
     window_width: u32,
     window_height: u32,
-    measure_framerate: bool,
-    measure_start: std::time::Instant,
-    counter: usize,
+    display_framerate: bool,
 }
 
 fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
@@ -91,9 +89,7 @@ fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
         )),
         window_width: img_width as u32,
         window_height: img_height as u32,
-        measure_framerate: args.framerate,
-        measure_start: std::time::Instant::now(),
-        counter: 0,
+        display_framerate: args.framerate,
     }
 }
 
@@ -107,18 +103,6 @@ fn update<T: Fighter + Colored>(_app: &App, model: &mut Model<T>, _update: Updat
             } else {
                 *pixel = [0, 0, 0].into()
             }
-        }
-    }
-
-    if model.measure_framerate {
-        const MEASURE_FRAMES_COUNT: usize = 100;
-
-        model.counter += 1;
-        if model.counter % MEASURE_FRAMES_COUNT == 0 {
-            let framerate =
-                MEASURE_FRAMES_COUNT as f32 / model.measure_start.elapsed().as_secs_f32();
-            println!("Frame rate: {:.2}", framerate);
-            model.measure_start = std::time::Instant::now();
         }
     }
 }
@@ -144,6 +128,10 @@ fn view<T>(app: &App, model: &Model<T>, frame: Frame) {
             .height(ratio * image_height as f32);
     }
     draw.to_frame(app, &frame).unwrap();
+
+    if model.display_framerate && app.elapsed_frames() % 100 == 99 {
+        println!("Frame rate: {:.2}", app.fps());
+    }
 }
 
 fn event<T>(app: &App, model: &mut Model<T>, ev: nannou::event::WindowEvent) {
