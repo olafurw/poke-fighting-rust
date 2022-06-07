@@ -229,6 +229,12 @@ impl Colored for StreetFighter {
     }
 }
 
+impl core::fmt::Display for StreetFighter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{:?}", self.kind)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //use super::*;
