@@ -59,6 +59,7 @@ struct Model<T> {
     battle: Battle<T>,
     image: nannou::image::DynamicImage,
     window_size: (u32, u32),
+    paused: bool,
     measure_framerate: bool,
     measure_start: std::time::Instant,
     counter: usize,
@@ -99,6 +100,7 @@ fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
             img_height as u32,
         )),
         window_size: (img_width as u32, img_height as u32),
+        paused: false,
         measure_framerate: args.framerate,
         measure_start: std::time::Instant::now(),
         counter: 0,
@@ -108,14 +110,16 @@ fn model<T: 'static + Fighter + GenerateRandomly>(app: &App) -> Model<T> {
 }
 
 fn update<T: Fighter + Colored + Display>(app: &App, model: &mut Model<T>, _update: Update) {
-    model.battle.action();
+    if !model.paused {
+        model.battle.action();
 
-    if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image {
-        for (x, y, pixel) in pixels.enumerate_pixels_mut() {
-            if let Some(fighter) = model.battle.fighter((x as usize, y as usize)) {
-                *pixel = fighter.color();
-            } else {
-                *pixel = [0, 0, 0].into()
+        if let nannou::image::DynamicImage::ImageRgb8(ref mut pixels) = model.image {
+            for (x, y, pixel) in pixels.enumerate_pixels_mut() {
+                if let Some(fighter) = model.battle.fighter((x as usize, y as usize)) {
+                    *pixel = fighter.color();
+                } else {
+                    *pixel = [0, 0, 0].into()
+                }
             }
         }
     }
@@ -219,10 +223,11 @@ fn view<T>(app: &App, model: &Model<T>, frame: Frame) {
     model.info.draw_to_frame(&frame).unwrap();
 }
 
-fn key_pressed<T>(app: &App, _model: &mut Model<T>, key: nannou::event::Key) {
+fn key_pressed<T>(app: &App, model: &mut Model<T>, key: nannou::event::Key) {
     if key == nannou::event::Key::Space {
-        if let nannou::app::LoopMode::RefreshSync = app.loop_mode() {
-            app.set_loop_mode(nannou::app::LoopMode::loop_ntimes(0));
+        model.paused = !model.paused;
+        if model.paused {
+            app.set_loop_mode(nannou::app::LoopMode::wait());
         } else {
             app.set_loop_mode(nannou::app::LoopMode::refresh_sync());
         }
