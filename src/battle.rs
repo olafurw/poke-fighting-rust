@@ -74,7 +74,7 @@ where
         let mut current = start;
 
         loop {
-            let attacker_loc = (current % w, current / h);
+            let attacker_loc = (current % w, current / w);
             let defender_loc = (self.selection_callback)(self, attacker_loc, (w, h));
             if let Some(defender_loc) = defender_loc {
                 self.fight(attacker_loc, defender_loc);
