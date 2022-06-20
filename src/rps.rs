@@ -117,6 +117,12 @@ impl Colored for RPS {
     }
 }
 
+impl core::fmt::Display for RPS {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{:?}", self.kind)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
