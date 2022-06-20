@@ -63,8 +63,15 @@ mod tests {
 
     #[test]
     fn test_access() {
-        let grid = Grid2D::new_with((10, 2), || 1);
+        let mut grid = Grid2D::new_with((10, 2), || 1);
         assert_eq!(grid.get((9, 1)), Some(&1));
         assert_eq!(grid.get((1, 9)), None);
+
+        if let Some(pair) = grid.get_pair_mut((0, 0), (7, 1)) {
+            *pair.0 = 2;
+            *pair.1 = 3;
+        }
+        assert_eq!(grid.get((0, 0)), Some(&2));
+        assert_eq!(grid.get((7, 1)), Some(&3));
     }
 }
