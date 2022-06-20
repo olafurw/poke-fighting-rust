@@ -7,7 +7,7 @@ edition = "2021"
 clap = { version = "3.2.5", features = ["derive"] }
 rand = "0.8.5"
 lazy_static = "1.4"
-once_cell = "1.10"
+once_cell = "1.12"
 nannou = "0.18.1"
 nannou_egui = "0.5.0"
 serde = { version = "1.0", features = ["derive"] }
