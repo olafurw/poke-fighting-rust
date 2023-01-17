@@ -1,4 +1,4 @@
-use clap::{ValueEnum, Parser};
+use clap::{Parser, ValueEnum};
 use serde::Deserialize;
 
 /// Battle simulation
