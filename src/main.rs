@@ -8,7 +8,7 @@ use poke_fighting_rust::{
     Args, Battle, Colored, Fighter, FighterType, GenerateRandomly, Pokemon, SelectionAlgorithm,
     StreetFighter, RPS,
 };
-use std::cmp::{max, min};
+use std::cmp::min;
 use std::fs::File;
 use std::io;
 use std::path::PathBuf;
@@ -179,11 +179,23 @@ fn window_coords_to_image(
         (image_size.0 as f32) * 0.5 + image_pos.0,
         (image_size.1 as f32) * 0.5 - image_pos.1,
     );
+    let corner_relative_pos = (
+        if corner_relative_pos.0 > 0.0 {
+            corner_relative_pos.0 as u32
+        } else {
+            0
+        },
+        if corner_relative_pos.1 > 0.0 {
+            corner_relative_pos.1 as u32
+        } else {
+            0
+        },
+    );
 
     // Make sure to correct out of bounds positions
     (
-        min(max(corner_relative_pos.0 as u32, 0), image_size.0 - 1),
-        min(max(corner_relative_pos.1 as u32, 0), image_size.1 - 1),
+        min(corner_relative_pos.0, image_size.0 - 1),
+        min(corner_relative_pos.1, image_size.1 - 1),
     )
 }
 
