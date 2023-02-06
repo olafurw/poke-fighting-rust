@@ -131,7 +131,7 @@ fn update<T: Fighter + Colored + Display>(app: &App, model: &mut Model<T>, _upda
         .show(&ctx, |ui| {
             let (x, y) =
                 window_coords_to_image((app.mouse.x, app.mouse.y), window_size, image_size);
-            ui.label(format!("Position: {}, {}", x, y));
+            ui.label(format!("Position: {x}, {y}"));
             if let Some(fighter) = model.battle.fighter((x as usize, y as usize)) {
                 let color = fighter.color();
                 ui.horizontal(|ui| {
@@ -144,7 +144,7 @@ fn update<T: Fighter + Colored + Display>(app: &App, model: &mut Model<T>, _upda
                         egui::Color32::from_rgb(color[0], color[1], color[2]),
                     );
 
-                    ui.label(format!("{}", fighter));
+                    ui.label(format!("{fighter}"));
                 });
             } else {
                 ui.label("Nothing here");
