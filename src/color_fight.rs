@@ -15,9 +15,7 @@ impl Default for ColorFighter {
 
 impl ColorFighter {
     pub fn new() -> Self {
-        ColorFighter {
-            color: [0, 0, 0],
-        }
+        ColorFighter { color: [0, 0, 0] }
     }
 
     fn reset(&mut self, color: &[u8; 3]) {
@@ -44,7 +42,7 @@ impl Fighter for ColorFighter {
                 return true;
             }
         }
-        
+
         false
     }
 
@@ -72,7 +70,7 @@ impl GenerateRandomly for ColorFighter {
         s.color[0] = rng.gen_range(0..=255);
         s.color[1] = rng.gen_range(0..=255);
         s.color[2] = rng.gen_range(0..=255);
-        
+
         s
     }
 }
@@ -94,22 +92,17 @@ mod tests {
     //use super::*;
 
     #[test]
-    fn convert_type_from_usize() {
-    }
+    fn convert_type_from_usize() {}
 
     #[test]
-    fn test_get_effectiveness() {
-    }
+    fn test_get_effectiveness() {}
 
     #[test]
-    fn test_get_color() {
-    }
+    fn test_get_color() {}
 
     #[test]
-    fn test_damage() {
-    }
+    fn test_damage() {}
 
     #[test]
-    fn test_reset() {
-    }
+    fn test_reset() {}
 }
