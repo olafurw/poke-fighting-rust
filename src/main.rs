@@ -6,7 +6,7 @@ use nannou_egui::{egui, Egui};
 use once_cell::sync::OnceCell;
 use poke_fighting_rust::{
     Args, Battle, Colored, Fighter, FighterType, GenerateRandomly, Pokemon, SelectionAlgorithm,
-    StreetFighter, RPS,
+    StreetFighter, RPS, ColorFighter
 };
 use std::cmp::min;
 use std::fs::File;
@@ -44,6 +44,7 @@ fn main() -> io::Result<()> {
         FighterType::Pokemon => run_app::<Pokemon>(),
         FighterType::RockPaperScissors => run_app::<RPS>(),
         FighterType::StreetFighter => run_app::<StreetFighter>(),
+        FighterType::ColorFighter => run_app::<ColorFighter>()
     };
     Ok(())
 }

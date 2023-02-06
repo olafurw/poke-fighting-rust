@@ -49,6 +49,7 @@ pub enum FighterType {
     Pokemon,
     RockPaperScissors,
     StreetFighter,
+    ColorFighter,
 }
 
 fn validate_size(arg: &str) -> Result<usize, String> {
